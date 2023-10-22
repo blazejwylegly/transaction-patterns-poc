@@ -1,0 +1,12 @@
+# Server configurations
+server:
+  host: localhost
+  port: 8082
+
+# Database credentials
+database:
+  host: localhost
+  port: 5432
+  username: postgres
+  password: postgres
+  name: poc
