@@ -1,0 +1,10 @@
+# Server configurations
+server:
+  host: localhost
+  port: 8080
+
+# Database credentials
+kafka:
+  url: localhost:29092
+  flushFrequencyMs: 500
+  ordersTopic: 'order-requested'
