@@ -5,6 +5,6 @@ server:
 
 # Database credentials
 kafka:
-  url: localhost:29092
+  url: localhost:9092
   flushFrequencyMs: 500
-  ordersTopic: 'order-requested'
+  orderRequestsTopic: 'order-request'
