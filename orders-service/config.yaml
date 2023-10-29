@@ -7,4 +7,5 @@ server:
 kafka:
   url: localhost:9092
   flushFrequencyMs: 500
-  orderRequestsTopic: 'order-request'
+  topics:
+    orderRequestsTopic: 'order-request'
