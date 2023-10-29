@@ -15,22 +15,32 @@ type Config struct {
 
 	Kafka struct {
 		Url              string `yaml:"url" envconfig:"KAFKA_URL"`
-		FlushFrequencyMs string `yaml:"flushFrequencyMs" envconfig:"KAFKA_FLUSH_FREQUENCY_MS"`
-		OrdersTopic      string `yaml:"ordersTopic" envconfig:"KAFKA_ORDERS_TOPIC"`
+		FlushFrequencyMs int32  `yaml:"flushFrequencyMs" envconfig:"KAFKA_FLUSH_FREQUENCY_MS"`
+		Topics           struct {
+			OrderRequestsTopic string `yaml:"orderRequestsTopic" envconfig:"KAFKA_ORDERS_TOPIC"`
+		} `yaml:"topics"`
 	} `yaml:"kafka"`
 }
 
 type KafkaConfig struct {
 	KafkaUrl              string
-	KafkaFlushFrequencyMs string
-	OrdersTopic           string
+	KafkaFlushFrequencyMs int32
 }
 
-func (cfg *Config) GetDatabaseConfig() *KafkaConfig {
+type KafkaTopics struct {
+	OrderRequestsTopic string
+}
+
+func (cfg *Config) GetKafkaConfig() *KafkaConfig {
 	return &KafkaConfig{
 		KafkaUrl:              cfg.Kafka.Url,
 		KafkaFlushFrequencyMs: cfg.Kafka.FlushFrequencyMs,
-		OrdersTopic:           cfg.Kafka.OrdersTopic,
+	}
+}
+
+func (cfg *Config) GetKafkaTopics() *KafkaTopics {
+	return &KafkaTopics{
+		OrderRequestsTopic: cfg.Kafka.Topics.OrderRequestsTopic,
 	}
 }
 
