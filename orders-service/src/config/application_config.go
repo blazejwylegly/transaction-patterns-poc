@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"github.com/kelseyhightower/envconfig"
 	"gopkg.in/yaml.v3"
 	"log"
@@ -25,22 +26,25 @@ type Config struct {
 type KafkaConfig struct {
 	KafkaUrl              string
 	KafkaFlushFrequencyMs int32
+	KafkaTopics           KafkaTopics
 }
 
 type KafkaTopics struct {
 	OrderRequestsTopic string
 }
 
+func (cfg *Config) GetServerUrl() string {
+	return fmt.Sprintf("%s:%s", cfg.Server.Host, cfg.Server.Port)
+
+}
+
 func (cfg *Config) GetKafkaConfig() *KafkaConfig {
 	return &KafkaConfig{
 		KafkaUrl:              cfg.Kafka.Url,
 		KafkaFlushFrequencyMs: cfg.Kafka.FlushFrequencyMs,
-	}
-}
-
-func (cfg *Config) GetKafkaTopics() *KafkaTopics {
-	return &KafkaTopics{
-		OrderRequestsTopic: cfg.Kafka.Topics.OrderRequestsTopic,
+		KafkaTopics: KafkaTopics{
+			OrderRequestsTopic: cfg.Kafka.Topics.OrderRequestsTopic,
+		},
 	}
 }
 
