@@ -8,7 +8,6 @@ import (
 
 func readOrder(request *http.Request, order *models.Order) error {
 	err := json.NewDecoder(request.Body).Decode(order)
-
 	if err != nil {
 		return err
 	}

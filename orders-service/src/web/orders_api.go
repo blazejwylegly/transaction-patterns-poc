@@ -2,19 +2,22 @@ package web
 
 import (
 	"github.com/blazejwylegly/transactions-poc/orders-service/src/models"
+	"github.com/blazejwylegly/transactions-poc/orders-service/src/service"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 )
 
 type OrderApi struct {
-	router *mux.Router
+	router       *mux.Router
+	orderService *service.OrderService
 }
 
-func InitOrderRouting(router *mux.Router) *OrderApi {
+func InitOrderRouting(router *mux.Router, orderService *service.OrderService) *OrderApi {
 	ordersRouter := router.PathPrefix("/order").Subrouter()
 	api := &OrderApi{
-		router: ordersRouter,
+		router:       ordersRouter,
+		orderService: orderService,
 	}
 	api.initializeMappings()
 	return api
@@ -33,6 +36,8 @@ func (api OrderApi) handlePlaceOrderMapping() func(writer http.ResponseWriter, r
 			log.Fatal("Error creating new order for customer!")
 			return
 		}
+
+		api.orderService.BeginOrderPlacedTransaction(order)
 
 		err = defaultEncoder(writer).Encode(order)
 		if err != nil {

@@ -3,6 +3,7 @@ module github.com/blazejwylegly/transactions-poc/orders-service
 go 1.19
 
 require (
+	github.com/IBM/sarama v1.41.3
 	github.com/google/uuid v1.3.1
 	github.com/gorilla/mux v1.8.0
 	github.com/kelseyhightower/envconfig v1.4.0
