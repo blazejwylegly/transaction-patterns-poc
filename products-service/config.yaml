@@ -10,3 +10,10 @@ database:
   username: postgres
   password: postgres
   name: poc
+
+# Kafka configuration
+kafka:
+  url: localhost:9092
+  flushFrequencyMs: 500
+  topics:
+    orderRequestsTopic: 'order-request'

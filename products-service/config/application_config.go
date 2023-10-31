@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"github.com/kelseyhightower/envconfig"
 	"gopkg.in/yaml.v3"
 	"log"
@@ -20,6 +21,24 @@ type Config struct {
 		DbPassword string `yaml:"password" envconfig:"DB_PASSWORD"`
 		DbName     string `yaml:"name" envconfig:"DB_NAME"`
 	} `yaml:"database"`
+
+	Kafka struct {
+		Url              string `yaml:"url" envconfig:"KAFKA_URL"`
+		FlushFrequencyMs int32  `yaml:"flushFrequencyMs" envconfig:"KAFKA_FLUSH_FREQUENCY_MS"`
+		Topics           struct {
+			OrderRequestsTopic string `yaml:"orderRequestsTopic" envconfig:"KAFKA_ORDERS_TOPIC"`
+		} `yaml:"topics"`
+	} `yaml:"kafka"`
+}
+
+type KafkaConfig struct {
+	KafkaUrl              string
+	KafkaFlushFrequencyMs int32
+	KafkaTopics           KafkaTopics
+}
+
+type KafkaTopics struct {
+	OrderRequestsTopic string
 }
 
 type DatabaseConfig struct {
@@ -28,6 +47,20 @@ type DatabaseConfig struct {
 	DbUsername string
 	DbPassword string
 	DbName     string
+}
+
+func (cfg *Config) GetServerUrl() string {
+	return fmt.Sprintf("%s:%s", cfg.Server.Host, cfg.Server.Port)
+}
+
+func (cfg *Config) GetKafkaConfig() *KafkaConfig {
+	return &KafkaConfig{
+		KafkaUrl:              cfg.Kafka.Url,
+		KafkaFlushFrequencyMs: cfg.Kafka.FlushFrequencyMs,
+		KafkaTopics: KafkaTopics{
+			OrderRequestsTopic: cfg.Kafka.Topics.OrderRequestsTopic,
+		},
+	}
 }
 
 func (cfg *Config) GetDatabaseConfig() *DatabaseConfig {
@@ -60,7 +93,6 @@ func New(configFileName string) *Config {
 		os.Exit(2)
 	}
 
-	// read env variables
 	readEnv(&config)
 	return &config
 }
