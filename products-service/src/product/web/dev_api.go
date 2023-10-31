@@ -1,7 +1,7 @@
 package web
 
 import (
-	"github.com/blazejwylegly/transactions-poc/products-service/config"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/config"
 	"github.com/gorilla/mux"
 	"net/http"
 )

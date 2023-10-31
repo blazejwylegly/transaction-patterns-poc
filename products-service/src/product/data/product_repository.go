@@ -2,8 +2,8 @@ package data
 
 import (
 	"fmt"
-	"github.com/blazejwylegly/transactions-poc/products-service/config"
-	"github.com/blazejwylegly/transactions-poc/products-service/product/models"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/config"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/product/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"

@@ -2,8 +2,8 @@ package web
 
 import (
 	"encoding/json"
-	"github.com/blazejwylegly/transactions-poc/products-service/product/models"
-	"github.com/blazejwylegly/transactions-poc/products-service/product/service"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/product/models"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/product/service"
 	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
