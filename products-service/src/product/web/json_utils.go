@@ -2,7 +2,7 @@ package web
 
 import (
 	"encoding/json"
-	"github.com/blazejwylegly/transactions-poc/products-service/product/models"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/product/models"
 	"io"
 	"net/http"
 )

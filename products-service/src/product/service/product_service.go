@@ -1,18 +1,18 @@
 package service
 
 import (
-	"github.com/blazejwylegly/transactions-poc/products-service/product/data"
-	"github.com/blazejwylegly/transactions-poc/products-service/product/models"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/product/data"
+	models2 "github.com/blazejwylegly/transactions-poc/products-service/src/product/models"
 )
 
 type ProductService struct {
 	productRepo data.ProductRepository
 }
 
-func (service ProductService) FindAll() []*models.ProductDto {
-	var products []*models.ProductDto
+func (service ProductService) FindAll() []*models2.ProductDto {
+	var products []*models2.ProductDto
 	for _, entity := range service.productRepo.FindAll() {
-		productDto := &models.ProductDto{
+		productDto := &models2.ProductDto{
 			ProductId:   entity.ProductID,
 			Name:        entity.Name,
 			Price:       entity.Price,
@@ -24,9 +24,9 @@ func (service ProductService) FindAll() []*models.ProductDto {
 	return products
 }
 
-func (service ProductService) SaveAll(products []*models.ProductDto) {
+func (service ProductService) SaveAll(products []*models2.ProductDto) {
 	for _, product := range products {
-		productEntity := &models.Product{
+		productEntity := &models2.Product{
 			Name:        product.Name,
 			Price:       product.Price,
 			Description: product.Description,
@@ -36,8 +36,8 @@ func (service ProductService) SaveAll(products []*models.ProductDto) {
 	}
 }
 
-func (service ProductService) SaveOrUpdate(product *models.ProductDto) {
-	productEntity := &models.Product{
+func (service ProductService) SaveOrUpdate(product *models2.ProductDto) {
+	productEntity := &models2.Product{
 		Name:        product.Name,
 		Price:       product.Price,
 		Description: product.Description,
@@ -46,9 +46,9 @@ func (service ProductService) SaveOrUpdate(product *models.ProductDto) {
 	service.productRepo.SaveOrUpdate(productEntity)
 }
 
-func (service ProductService) FindById(productId int) *models.ProductDto {
+func (service ProductService) FindById(productId int) *models2.ProductDto {
 	entity := service.productRepo.FindById(productId)
-	return &models.ProductDto{
+	return &models2.ProductDto{
 		ProductId:   entity.ProductID,
 		Name:        entity.Name,
 		Price:       entity.Price,
