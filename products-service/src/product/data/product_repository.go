@@ -1,11 +1,11 @@
 package data
 
 import (
-	"fmt"
 	"github.com/blazejwylegly/transactions-poc/products-service/src/config"
 	"github.com/blazejwylegly/transactions-poc/products-service/src/product/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"log"
 )
 
@@ -48,14 +48,10 @@ func NewProductRepository(dbConfig config.DatabaseConfig) ProductRepository {
 }
 
 func initDbConnection(dbConfig config.DatabaseConfig) *gorm.DB {
-	dbUrl := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
-		dbConfig.DbUsername,
-		dbConfig.DbPassword,
-		dbConfig.DbHost,
-		dbConfig.DbPort,
-		dbConfig.DbName,
-	)
-	db, err := gorm.Open(postgres.Open(dbUrl), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(dbConfig.GetDbUrl()), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
+
 	if err != nil {
 		log.Fatal(err)
 	}
