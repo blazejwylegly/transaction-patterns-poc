@@ -53,8 +53,18 @@ func (cfg *Config) GetServerUrl() string {
 	return fmt.Sprintf("%s:%s", cfg.Server.Host, cfg.Server.Port)
 }
 
-func (cfg *Config) GetKafkaConfig() *KafkaConfig {
-	return &KafkaConfig{
+func (dbConfig *DatabaseConfig) GetDbUrl() string {
+	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
+		dbConfig.DbUsername,
+		dbConfig.DbPassword,
+		dbConfig.DbHost,
+		dbConfig.DbPort,
+		dbConfig.DbName,
+	)
+}
+
+func (cfg *Config) GetKafkaConfig() KafkaConfig {
+	return KafkaConfig{
 		KafkaUrl:              cfg.Kafka.Url,
 		KafkaFlushFrequencyMs: cfg.Kafka.FlushFrequencyMs,
 		KafkaTopics: KafkaTopics{
@@ -63,8 +73,8 @@ func (cfg *Config) GetKafkaConfig() *KafkaConfig {
 	}
 }
 
-func (cfg *Config) GetDatabaseConfig() *DatabaseConfig {
-	return &DatabaseConfig{
+func (cfg *Config) GetDatabaseConfig() DatabaseConfig {
+	return DatabaseConfig{
 		DbHost:     cfg.Database.DbHost,
 		DbPort:     cfg.Database.DbPort,
 		DbUsername: cfg.Database.DbUsername,
