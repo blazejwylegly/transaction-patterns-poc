@@ -1,11 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"github.com/blazejwylegly/transactions-poc/products-service/src/config"
 	"github.com/blazejwylegly/transactions-poc/products-service/src/product/data"
-	"github.com/blazejwylegly/transactions-poc/products-service/src/product/messaging"
 	"github.com/blazejwylegly/transactions-poc/products-service/src/product/service"
-	"github.com/blazejwylegly/transactions-poc/products-service/src/product/web"
+	web2 "github.com/blazejwylegly/transactions-poc/products-service/src/product/web"
 
 	"github.com/gorilla/mux"
 	"log"
@@ -15,24 +15,16 @@ import (
 const configFileName = "config.yaml"
 
 func main() {
-	// CONFIG
 	appConfig := config.New(configFileName)
-
-	// DB
-	productRepo := data.NewProductRepository(appConfig.GetDatabaseConfig())
+	productRepo := data.NewProductRepository(*appConfig.GetDatabaseConfig())
 	productService := service.NewProductService(&productRepo)
-
-	// KAFKA
-	kafkaClient := messaging.NewKafkaClient(appConfig.GetKafkaConfig())
-	orderListener := messaging.NewListener(kafkaClient, appConfig.GetKafkaConfig())
-	orderListener.StartConsuming()
-	// WEB
 	router := mux.NewRouter()
 
-	web.InitProductApi(router, productService)
-	web.InitDevApi(router, *appConfig)
+	web2.InitProductApi(router, productService)
+	web2.InitDevApi(router, *appConfig)
 
-	err := http.ListenAndServe(appConfig.GetServerUrl(), router)
+	serverUrl := fmt.Sprintf("%s:%s", appConfig.Server.Host, appConfig.Server.Port)
+	err := http.ListenAndServe(serverUrl, router)
 	if err != nil {
 		log.Fatal(err)
 	}
