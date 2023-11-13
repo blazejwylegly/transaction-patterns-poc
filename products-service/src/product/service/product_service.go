@@ -2,17 +2,19 @@ package service
 
 import (
 	"github.com/blazejwylegly/transactions-poc/products-service/src/product/data"
-	models2 "github.com/blazejwylegly/transactions-poc/products-service/src/product/models"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/product/models"
+	"github.com/google/uuid"
+	"log"
 )
 
 type ProductService struct {
 	productRepo data.ProductRepository
 }
 
-func (service ProductService) FindAll() []*models2.ProductDto {
-	var products []*models2.ProductDto
+func (service ProductService) FindAll() []*models.ProductDto {
+	var products []*models.ProductDto
 	for _, entity := range service.productRepo.FindAll() {
-		productDto := &models2.ProductDto{
+		productDto := &models.ProductDto{
 			ProductId:   entity.ProductID,
 			Name:        entity.Name,
 			Price:       entity.Price,
@@ -24,9 +26,9 @@ func (service ProductService) FindAll() []*models2.ProductDto {
 	return products
 }
 
-func (service ProductService) SaveAll(products []*models2.ProductDto) {
+func (service ProductService) SaveAll(products []*models.ProductDto) {
 	for _, product := range products {
-		productEntity := &models2.Product{
+		productEntity := &models.Product{
 			Name:        product.Name,
 			Price:       product.Price,
 			Description: product.Description,
@@ -36,8 +38,13 @@ func (service ProductService) SaveAll(products []*models2.ProductDto) {
 	}
 }
 
-func (service ProductService) SaveOrUpdate(product *models2.ProductDto) {
-	productEntity := &models2.Product{
+func (service ProductService) SaveOrUpdate(product *models.ProductDto) {
+	productId, err := uuid.NewUUID()
+	if err != nil {
+		log.Printf("Error creating uuid for new product: %v!", err)
+	}
+	productEntity := &models.Product{
+		ProductID:   productId,
 		Name:        product.Name,
 		Price:       product.Price,
 		Description: product.Description,
@@ -46,9 +53,9 @@ func (service ProductService) SaveOrUpdate(product *models2.ProductDto) {
 	service.productRepo.SaveOrUpdate(productEntity)
 }
 
-func (service ProductService) FindById(productId int) *models2.ProductDto {
+func (service ProductService) FindById(productId uuid.UUID) *models.ProductDto {
 	entity := service.productRepo.FindById(productId)
-	return &models2.ProductDto{
+	return &models.ProductDto{
 		ProductId:   entity.ProductID,
 		Name:        entity.Name,
 		Price:       entity.Price,
@@ -57,7 +64,7 @@ func (service ProductService) FindById(productId int) *models2.ProductDto {
 	}
 }
 
-func (service ProductService) UpdateQuantity(productId int, body struct {
+func (service ProductService) UpdateQuantity(productId uuid.UUID, body struct {
 	Quantity int `json:"quantity"`
 }) {
 	service.productRepo.UpdateQuantity(productId, body.Quantity)
