@@ -1,24 +1,27 @@
 package messaging
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/IBM/sarama"
 	"github.com/blazejwylegly/transactions-poc/products-service/src/config"
+	orderModels "github.com/blazejwylegly/transactions-poc/products-service/src/order"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/product/service"
 	"log"
-	"math/rand"
 	"sync"
-	"time"
 )
 
 type OrderListener struct {
-	kafkaClient        KafkaClient
-	orderRequestsTopic string
+	kafkaClient          KafkaClient
+	orderRequestsTopic   string
+	orderRequestsHandler service.OrderRequestHandler
 }
 
-func NewListener(client KafkaClient, config config.KafkaConfig) OrderListener {
+func NewListener(client KafkaClient, config config.KafkaConfig, handler service.OrderRequestHandler) OrderListener {
 	return OrderListener{
 		client,
 		config.KafkaTopics.OrderRequestsTopic,
+		handler,
 	}
 }
 
@@ -58,14 +61,17 @@ func (listener OrderListener) consumePartition(wg *sync.WaitGroup, partition int
 		}
 	}(partitionConsumer)
 
-	go processKafkaMessages(partition, messagesChannel)
+	go listener.processKafkaMessages(partition, messagesChannel)
 	select {}
 }
 
-func processKafkaMessages(partition int32, messagesChannel chan *sarama.ConsumerMessage) {
+func (listener OrderListener) processKafkaMessages(partition int32, messagesChannel chan *sarama.ConsumerMessage) {
 	for message := range messagesChannel {
-		time.Sleep(time.Duration(rand.Intn(5)) * time.Second)
-		fmt.Printf("Partition %d currently processing message with offset %d \n",
-			partition, message.Offset)
+		orderRequest := &orderModels.OrderRequestDto{}
+		err := json.Unmarshal(message.Value, orderRequest)
+		if err != nil {
+			fmt.Printf("Error handling message { partition:'%d', offset:'%d' }: %v\n", partition, message.Offset, err)
+		}
+		listener.orderRequestsHandler.Handle(orderRequest)
 	}
 }

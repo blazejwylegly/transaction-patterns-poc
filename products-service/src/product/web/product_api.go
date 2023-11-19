@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"github.com/blazejwylegly/transactions-poc/products-service/src/product/models"
 	"github.com/blazejwylegly/transactions-poc/products-service/src/product/service"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"net/http"
-	"strconv"
 )
 
 type ProductApi struct {
@@ -60,7 +60,7 @@ func (api ProductApi) handleFindAllProducts() func(http.ResponseWriter, *http.Re
 
 func (api ProductApi) handleFindByProductId() func(http.ResponseWriter, *http.Request) {
 	return func(response http.ResponseWriter, request *http.Request) {
-		productId, err := strconv.Atoi(mux.Vars(request)["productId"])
+		productId, err := uuid.FromBytes([]byte(mux.Vars(request)["productId"]))
 		if err != nil {
 			http.Error(response, err.Error(), http.StatusBadRequest)
 		}
@@ -95,7 +95,7 @@ func (api ProductApi) handleSaveAllProducts() func(http.ResponseWriter, *http.Re
 
 func (api ProductApi) handleUpdateProductQuantity() func(http.ResponseWriter, *http.Request) {
 	return func(response http.ResponseWriter, request *http.Request) {
-		productId, err := strconv.Atoi(mux.Vars(request)["productId"])
+		productId, err := uuid.FromBytes([]byte(mux.Vars(request)["productId"]))
 		if err != nil {
 			http.Error(response, err.Error(), http.StatusBadRequest)
 		}

@@ -19,13 +19,18 @@ func main() {
 	appConfig := config.New(configFileName)
 
 	// DB
-	productRepo := data.NewProductRepository(appConfig.GetDatabaseConfig())
+	db := data.InitDbConnection(appConfig.GetDatabaseConfig())
+	productRepo := data.NewProductRepository(db)
+
+	// SERVICE
 	productService := service.NewProductService(&productRepo)
+	requestHandler := service.NewOrderRequestHandler(db)
 
 	// KAFKA
 	kafkaClient := messaging.NewKafkaClient(appConfig.GetKafkaConfig())
-	orderListener := messaging.NewListener(kafkaClient, appConfig.GetKafkaConfig())
+	orderListener := messaging.NewListener(kafkaClient, appConfig.GetKafkaConfig(), requestHandler)
 	orderListener.StartConsuming()
+
 	// WEB
 	router := mux.NewRouter()
 
