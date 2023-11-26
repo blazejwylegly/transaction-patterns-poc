@@ -1,10 +1,12 @@
 package main
 
 import (
+	"github.com/IBM/sarama"
 	"github.com/blazejwylegly/transactions-poc/products-service/src/config"
-	"github.com/blazejwylegly/transactions-poc/products-service/src/product/data"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/product/application"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/product/database"
 	"github.com/blazejwylegly/transactions-poc/products-service/src/product/messaging"
-	"github.com/blazejwylegly/transactions-poc/products-service/src/product/service"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/product/saga"
 	"github.com/blazejwylegly/transactions-poc/products-service/src/product/web"
 
 	"github.com/gorilla/mux"
@@ -19,16 +21,37 @@ func main() {
 	appConfig := config.New(configFileName)
 
 	// DB
-	db := data.InitDbConnection(appConfig.GetDatabaseConfig())
-	productRepo := data.NewProductRepository(db)
-
-	// SERVICE
-	productService := service.NewProductService(&productRepo)
-	requestHandler := service.NewOrderRequestHandler(db)
+	db := database.InitDbConnection(appConfig.GetDatabaseConfig())
+	productRepo := database.NewProductRepository(db)
 
 	// KAFKA
 	kafkaClient := messaging.NewKafkaClient(appConfig.GetKafkaConfig())
-	orderListener := messaging.NewListener(kafkaClient, appConfig.GetKafkaConfig(), requestHandler)
+
+	// KAFKA PRODUCER
+	kafkaProducer, err := kafkaClient.NewProducer()
+	defer func(producer sarama.SyncProducer) {
+		err := producer.Close()
+		if err != nil {
+			log.Fatalf("Error closing sarama kafka producer: %v", err)
+		}
+	}(*kafkaProducer)
+
+	// KAFKA CONSUMER
+	kafkaConsumer, err := kafkaClient.NewConsumer()
+	defer func(consumer sarama.Consumer) {
+		err := consumer.Close()
+		if err != nil {
+			log.Fatalf("Error closing sarama kafka consumer: %v", err)
+		}
+	}(*kafkaConsumer)
+
+	// SERVICE
+	eventProducer := messaging.NewSaramaProducer(*kafkaProducer)
+	productService := application.NewProductService(productRepo)
+	eventHandler := application.NewOrderEventHandler(db)
+	sagaCoordinator := saga.NewCoordinator(*eventHandler, eventProducer, appConfig.GetKafkaConfig())
+
+	orderListener := messaging.NewListener(*kafkaClient, appConfig.GetKafkaConfig(), *sagaCoordinator)
 	orderListener.StartConsuming()
 
 	// WEB
@@ -37,7 +60,7 @@ func main() {
 	web.InitProductApi(router, productService)
 	web.InitDevApi(router, *appConfig)
 
-	err := http.ListenAndServe(appConfig.GetServerUrl(), router)
+	err = http.ListenAndServe(appConfig.GetServerUrl(), router)
 	if err != nil {
 		log.Fatal(err)
 	}

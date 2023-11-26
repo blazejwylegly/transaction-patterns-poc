@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/IBM/sarama"
-	"github.com/blazejwylegly/transactions-poc/products-service/src/config"
 	"log"
 	"time"
 )
@@ -14,15 +13,11 @@ type EventProducer interface {
 }
 
 type SaramaEventProducer struct {
-	kafkaProducer     sarama.SyncProducer
-	orderRequestTopic string
+	kafkaProducer sarama.SyncProducer
 }
 
-func NewSaramaProducer(producer sarama.SyncProducer, config config.KafkaConfig) *SaramaEventProducer {
-	return &SaramaEventProducer{
-		kafkaProducer:     producer,
-		orderRequestTopic: config.KafkaTopics.OrderRequestsTopic,
-	}
+func NewSaramaProducer(producer sarama.SyncProducer) *SaramaEventProducer {
+	return &SaramaEventProducer{kafkaProducer: producer}
 }
 
 func (producer *SaramaEventProducer) Send(data interface{}, headers map[string]string, topic string) {
