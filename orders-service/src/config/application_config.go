@@ -35,11 +35,10 @@ type KafkaTopics struct {
 
 func (cfg *Config) GetServerUrl() string {
 	return fmt.Sprintf("%s:%s", cfg.Server.Host, cfg.Server.Port)
-
 }
 
-func (cfg *Config) GetKafkaConfig() *KafkaConfig {
-	return &KafkaConfig{
+func (cfg *Config) GetKafkaConfig() KafkaConfig {
+	return KafkaConfig{
 		KafkaUrl:              cfg.Kafka.Url,
 		KafkaFlushFrequencyMs: cfg.Kafka.FlushFrequencyMs,
 		KafkaTopics: KafkaTopics{

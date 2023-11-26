@@ -1,11 +1,17 @@
-package orderModels
+package events
 
 import (
 	"github.com/google/uuid"
 	"time"
 )
 
-type OrderRequestDto struct {
+type OrderItemsReserved struct {
+	OrderID    uuid.UUID `json:"order_id"`
+	CustomerID uuid.UUID `json:"customer_id"`
+	TotalCost  float64   `json:"total_cost"`
+}
+
+type OrderPlaced struct {
 	OrderID    uuid.UUID   `json:"order_id"`
 	CustomerID uuid.UUID   `json:"customer_id"`
 	OrderItems []OrderItem `json:"order_items"`

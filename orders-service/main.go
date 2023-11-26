@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/blazejwylegly/transactions-poc/orders-service/src/config"
 	"github.com/blazejwylegly/transactions-poc/orders-service/src/messaging"
-	"github.com/blazejwylegly/transactions-poc/orders-service/src/service"
+	"github.com/blazejwylegly/transactions-poc/orders-service/src/saga"
 	"github.com/blazejwylegly/transactions-poc/orders-service/src/web"
 	"github.com/gorilla/mux"
 	"log"
@@ -18,24 +18,24 @@ func main() {
 	appConfig := *config.New(configFileName)
 
 	// KAFKA
-	kafkaClient := *messaging.NewKafkaClient(appConfig)
-	kafkaProducer := kafkaClient.NewProducer()
+	kafkaClient := messaging.NewKafkaClient(appConfig)
+	saramaProducer := kafkaClient.NewProducer()
 
 	defer func() {
-		err := kafkaProducer.Close()
+		err := saramaProducer.Close()
 		if err != nil {
 			log.Printf("Error closing kafka producer %v", err)
 		}
 	}()
-	orderRequestProducer := *messaging.NewProducer(kafkaProducer, appConfig)
+	orderProducer := messaging.NewSaramaProducer(saramaProducer, appConfig.GetKafkaConfig())
 
 	// SERVICE
-	choreographyOrderService := service.NewOrderService(orderRequestProducer)
+	choreographyOrderService := saga.NewCoordinator(orderProducer, appConfig.GetKafkaConfig())
 
 	// WEB
 	baseRouter := mux.NewRouter()
 	web.InitDevApi(baseRouter, appConfig)
-	web.InitOrderRouting(baseRouter, choreographyOrderService)
+	web.NewOrderApi(baseRouter, *choreographyOrderService)
 
 	// APP SERVER
 	log.Fatal(http.ListenAndServe(appConfig.GetServerUrl(), baseRouter))

@@ -2,7 +2,7 @@ package web
 
 import (
 	"encoding/json"
-	"github.com/blazejwylegly/transactions-poc/products-service/src/product/models"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/product/dto"
 	"io"
 	"net/http"
 )
@@ -15,13 +15,13 @@ func readObject[T any](request *http.Request, object *T) (*T, error) {
 	return object, nil
 }
 
-func readManyObjects(request *http.Request) ([]*models.ProductDto, error) {
+func readManyObjects(request *http.Request) ([]*dto.ProductDto, error) {
 	bytes, err := io.ReadAll(request.Body)
 	if err != nil {
 		return nil, err
 	}
 
-	var products []*models.ProductDto
+	var products []*dto.ProductDto
 
 	err = json.Unmarshal(bytes, &products)
 	if err != nil {

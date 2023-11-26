@@ -6,32 +6,54 @@ import (
 	"github.com/blazejwylegly/transactions-poc/products-service/src/config"
 	"log"
 	"os"
+	"time"
 )
 
 type KafkaClient struct {
 	consumer     sarama.Consumer
+	producer     sarama.SyncProducer
 	saramaConfig *sarama.Config
 	kafkaConfig  config.KafkaConfig
 }
 
-func NewKafkaClient(kafkaConfig config.KafkaConfig) KafkaClient {
+func NewKafkaClient(kafkaConfig config.KafkaConfig) *KafkaClient {
 	saramaConfig := sarama.NewConfig()
 	sarama.Logger = log.New(os.Stdout, "[sarama] ", log.LstdFlags)
+	// Consumer config
 	saramaConfig.Consumer.Offsets.Initial = sarama.OffsetOldest
 
-	consumer, err := sarama.NewConsumer([]string{kafkaConfig.KafkaUrl}, nil)
-	if err != nil {
-		log.Printf("Error trying to connect to one of kafka brokers")
-	}
+	// Producer config
+	saramaConfig.Producer.Flush.Frequency = time.Duration(kafkaConfig.KafkaFlushFrequencyMs) * time.Millisecond
+	saramaConfig.Producer.Compression = sarama.CompressionGZIP
+	saramaConfig.Producer.RequiredAcks = sarama.WaitForLocal
+	saramaConfig.Producer.Return.Errors = true
+	saramaConfig.Producer.Return.Successes = true
 
-	return KafkaClient{
-		consumer:     consumer,
+	return &KafkaClient{
 		saramaConfig: saramaConfig,
 		kafkaConfig:  kafkaConfig,
 	}
 }
 
-func (kafkaClient KafkaClient) GetPartitions(topic string) (chan int32, error) {
+func (kafkaClient *KafkaClient) NewProducer() (*sarama.SyncProducer, error) {
+	producer, err := sarama.NewSyncProducer([]string{kafkaClient.kafkaConfig.KafkaUrl}, kafkaClient.saramaConfig)
+	if err != nil {
+		log.Printf("Error creating producer: %v", err)
+		return nil, err
+	}
+	return &producer, nil
+}
+
+func (kafkaClient *KafkaClient) NewConsumer() (*sarama.Consumer, error) {
+	consumer, err := sarama.NewConsumer([]string{kafkaClient.kafkaConfig.KafkaUrl}, kafkaClient.saramaConfig)
+	if err != nil {
+		log.Printf("Error trying to connect to one of kafka brokers")
+		return nil, err
+	}
+	return &consumer, nil
+}
+
+func (kafkaClient *KafkaClient) GetPartitions(topic string) (chan int32, error) {
 
 	partitions, err := kafkaClient.consumer.Partitions(topic)
 	if err != nil {
@@ -51,7 +73,7 @@ func (kafkaClient KafkaClient) GetPartitions(topic string) (chan int32, error) {
 	return partitionsChannel, nil
 }
 
-func (kafkaClient KafkaClient) ConsumePartition(topic string, partition int32) (sarama.PartitionConsumer, error) {
+func (kafkaClient *KafkaClient) ConsumePartition(topic string, partition int32) (sarama.PartitionConsumer, error) {
 	partitionConsumer, err := kafkaClient.consumer.ConsumePartition(topic, partition, sarama.OffsetOldest)
 	if err != nil {
 		fmt.Printf("Error creating partition consumer for partition %d: %v\n", partition, err)

@@ -10,11 +10,10 @@ import (
 
 type KafkaClient struct {
 	saramaConfig *sarama.Config
-	kafkaConfig  *config.KafkaConfig
+	kafkaConfig  config.KafkaConfig
 }
 
 func NewKafkaClient(cfg config.Config) *KafkaClient {
-
 	saramaConfig := sarama.NewConfig()
 	sarama.Logger = log.New(os.Stdout, "[sarama] ", log.LstdFlags)
 	saramaConfig.Producer.Flush.Frequency = time.Duration(cfg.GetKafkaConfig().KafkaFlushFrequencyMs) * time.Millisecond

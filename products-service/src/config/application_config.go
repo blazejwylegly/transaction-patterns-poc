@@ -27,6 +27,7 @@ type Config struct {
 		FlushFrequencyMs int32  `yaml:"flushFrequencyMs" envconfig:"KAFKA_FLUSH_FREQUENCY_MS"`
 		Topics           struct {
 			OrderRequestsTopic string `yaml:"orderRequestsTopic" envconfig:"KAFKA_ORDERS_TOPIC"`
+			ItemsReservedTopic string `yaml:"itemsReservedTopic" envconfig:"KAFKA_ITEMS_RESERVED_TOPIC"`
 		} `yaml:"topics"`
 	} `yaml:"kafka"`
 }
@@ -39,6 +40,7 @@ type KafkaConfig struct {
 
 type KafkaTopics struct {
 	OrderRequestsTopic string
+	ItemsReservedTopic string
 }
 
 type DatabaseConfig struct {
@@ -69,6 +71,7 @@ func (cfg *Config) GetKafkaConfig() KafkaConfig {
 		KafkaFlushFrequencyMs: cfg.Kafka.FlushFrequencyMs,
 		KafkaTopics: KafkaTopics{
 			OrderRequestsTopic: cfg.Kafka.Topics.OrderRequestsTopic,
+			ItemsReservedTopic: cfg.Kafka.Topics.ItemsReservedTopic,
 		},
 	}
 }

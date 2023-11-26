@@ -21,11 +21,11 @@ func InitDevApi(router *mux.Router, config config.Config) *DevApi {
 	return api
 }
 
-func (api DevApi) initializeMappings() {
+func (api *DevApi) initializeMappings() {
 	api.apiSubRouter.HandleFunc("", api.handleGetConfig()).Methods("GET")
 }
 
-func (api DevApi) handleGetConfig() func(http.ResponseWriter, *http.Request) {
+func (api *DevApi) handleGetConfig() func(http.ResponseWriter, *http.Request) {
 	return func(response http.ResponseWriter, request *http.Request) {
 		encoder := defaultEncoder(response)
 		err := encoder.Encode(api.config)

@@ -54,8 +54,11 @@ services:
       # blocks until kafka is reachable
       kafka-topics --bootstrap-server kafka:29092 --list
       
-      echo -e 'Creating kafka topics'
+      echo -e 'Creating order-request topic'
       kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic order-request --replication-factor 1 --partitions 5
+      
+      echo -e 'Creating items-reserved topic'
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic order-items-reserved --replication-factor 1 --partitions 5
       
       echo -e 'Successfully created the following topics:'
       kafka-topics --bootstrap-server kafka:29092 --list
