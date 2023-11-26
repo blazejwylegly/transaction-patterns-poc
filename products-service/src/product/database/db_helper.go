@@ -1,8 +1,7 @@
-package data
+package database
 
 import (
 	"github.com/blazejwylegly/transactions-poc/products-service/src/config"
-	"github.com/blazejwylegly/transactions-poc/products-service/src/product/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -18,7 +17,7 @@ func InitDbConnection(dbConfig config.DatabaseConfig) *gorm.DB {
 		log.Fatal(err)
 	}
 
-	if err := db.AutoMigrate(&models.Product{}); err != nil {
+	if err := db.AutoMigrate(&Product{}); err != nil {
 		log.Fatal(err)
 	}
 	return db

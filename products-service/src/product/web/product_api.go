@@ -2,8 +2,8 @@ package web
 
 import (
 	"encoding/json"
-	"github.com/blazejwylegly/transactions-poc/products-service/src/product/models"
-	"github.com/blazejwylegly/transactions-poc/products-service/src/product/service"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/product/application"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/product/dto"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -11,10 +11,10 @@ import (
 
 type ProductApi struct {
 	apiSubRouter   *mux.Router
-	productService *service.ProductService
+	productService *application.ProductService
 }
 
-func InitProductApi(router *mux.Router, productService *service.ProductService) *ProductApi {
+func InitProductApi(router *mux.Router, productService *application.ProductService) *ProductApi {
 	productApiRouter := router.PathPrefix("/api/product").Subrouter()
 	api := &ProductApi{
 		apiSubRouter:   productApiRouter,
@@ -38,7 +38,7 @@ func (api ProductApi) initializeMappings() {
 
 func (api ProductApi) handleUpdateInventory() func(http.ResponseWriter, *http.Request) {
 	return func(response http.ResponseWriter, request *http.Request) {
-		product, err := readObject(request, &models.ProductDto{})
+		product, err := readObject(request, &dto.ProductDto{})
 		if err != nil {
 			http.Error(response, err.Error(), http.StatusBadRequest)
 		}
@@ -75,7 +75,7 @@ func (api ProductApi) handleFindByProductId() func(http.ResponseWriter, *http.Re
 
 func (api ProductApi) handleSaveProduct() func(http.ResponseWriter, *http.Request) {
 	return func(response http.ResponseWriter, request *http.Request) {
-		product, err := readObject(request, &models.ProductDto{})
+		product, err := readObject(request, &dto.ProductDto{})
 		if err != nil {
 			http.Error(response, err.Error(), http.StatusBadRequest)
 		}
