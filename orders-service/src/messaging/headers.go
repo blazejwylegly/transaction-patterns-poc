@@ -1,6 +1,6 @@
 package messaging
 
-var (
+const (
 	StepNameHeader             = "step_name"
 	StepExecutorHeader         = "step_executor"
 	TransactionIdHeader        = "txn_id"
