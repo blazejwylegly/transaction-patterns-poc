@@ -6,6 +6,8 @@ import (
 	"github.com/blazejwylegly/transactions-poc/products-service/src/product/application"
 	"github.com/blazejwylegly/transactions-poc/products-service/src/product/database"
 	"github.com/blazejwylegly/transactions-poc/products-service/src/product/messaging"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/product/messaging/listener"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/product/messaging/producer"
 	"github.com/blazejwylegly/transactions-poc/products-service/src/product/saga"
 	"github.com/blazejwylegly/transactions-poc/products-service/src/product/web"
 
@@ -46,12 +48,12 @@ func main() {
 	}(*kafkaConsumer)
 
 	// SERVICE
-	eventProducer := messaging.NewSaramaProducer(*kafkaProducer)
+	eventProducer := producer.NewSaramaProducer(*kafkaProducer)
 	productService := application.NewProductService(productRepo)
 	eventHandler := application.NewOrderEventHandler(db)
 	sagaCoordinator := saga.NewCoordinator(*eventHandler, eventProducer, appConfig.GetKafkaConfig())
 
-	orderListener := messaging.NewListener(*kafkaClient, appConfig.GetKafkaConfig(), *sagaCoordinator)
+	orderListener := listener.NewListener(*kafkaClient, appConfig.GetKafkaConfig(), *sagaCoordinator)
 	orderListener.StartConsuming()
 
 	// WEB

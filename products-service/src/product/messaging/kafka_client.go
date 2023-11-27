@@ -41,6 +41,7 @@ func (kafkaClient *KafkaClient) NewProducer() (*sarama.SyncProducer, error) {
 		log.Printf("Error creating producer: %v", err)
 		return nil, err
 	}
+	kafkaClient.producer = producer
 	return &producer, nil
 }
 
@@ -50,6 +51,7 @@ func (kafkaClient *KafkaClient) NewConsumer() (*sarama.Consumer, error) {
 		log.Printf("Error trying to connect to one of kafka brokers")
 		return nil, err
 	}
+	kafkaClient.consumer = consumer
 	return &consumer, nil
 }
 

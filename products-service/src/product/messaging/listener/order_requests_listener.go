@@ -1,4 +1,4 @@
-package messaging
+package listener
 
 import (
 	"encoding/json"
@@ -6,18 +6,19 @@ import (
 	"github.com/IBM/sarama"
 	"github.com/blazejwylegly/transactions-poc/products-service/src/config"
 	"github.com/blazejwylegly/transactions-poc/products-service/src/product/events"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/product/messaging"
 	"github.com/blazejwylegly/transactions-poc/products-service/src/product/saga"
 	"log"
 	"sync"
 )
 
 type OrderListener struct {
-	kafkaClient KafkaClient
+	kafkaClient messaging.KafkaClient
 	coordinator saga.Coordinator
 	kafkaTopics config.KafkaTopics
 }
 
-func NewListener(client KafkaClient, config config.KafkaConfig, coordinator saga.Coordinator) *OrderListener {
+func NewListener(client messaging.KafkaClient, config config.KafkaConfig, coordinator saga.Coordinator) *OrderListener {
 	return &OrderListener{
 		client,
 		coordinator,
