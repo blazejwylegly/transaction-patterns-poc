@@ -48,7 +48,7 @@ func createMessage[T any](message T, headers map[string]string, topicName string
 		return nil, nil
 	}
 
-	saramaHeaders := make([]sarama.RecordHeader, len(headers))
+	saramaHeaders := make([]sarama.RecordHeader, 0)
 	for headerKey, headerValue := range headers {
 		saramaHeaders = append(saramaHeaders, sarama.RecordHeader{Key: []byte(headerKey), Value: []byte(headerValue)})
 	}
