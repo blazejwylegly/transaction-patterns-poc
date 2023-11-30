@@ -10,7 +10,7 @@ type PaymentRequested struct {
 	TotalCost  float64   `json:"total_cost"`
 }
 
-type PaymentReceived struct {
+type PaymentProcessed struct {
 	OrderID    uuid.UUID   `json:"order_id"`
 	CustomerID uuid.UUID   `json:"customer_id"`
 	PaidWith   PaymentType `json:"paid_with"`
