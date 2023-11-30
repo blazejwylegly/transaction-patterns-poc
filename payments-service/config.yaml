@@ -1,0 +1,20 @@
+# Server configurations
+server:
+  host: localhost
+  port: 8081
+
+# Database credentials
+database:
+  host: localhost
+  port: 5432
+  username: postgres
+  password: postgres
+  name: poc
+
+# Kafka configuration
+kafka:
+  url: localhost:9092
+  flushFrequencyMs: 500
+  topics:
+    itemsReservedTopic: 'order-items-reserved'
+    orderResultsTopic: 'order-results'
