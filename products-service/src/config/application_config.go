@@ -106,6 +106,7 @@ func New(configFileName string) *Config {
 		os.Exit(2)
 	}
 
+	// Prioritize environment variables over file configuration
 	readEnv(&config)
 	return &config
 }
