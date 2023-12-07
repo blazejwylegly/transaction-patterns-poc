@@ -58,6 +58,19 @@ services:
       kafka-topics --bootstrap-server kafka:29092 --list
       "
 
+  orders-service:
+    depends_on:
+      - kafka
+    build:
+      context: ./orders-service
+      dockerfile: ./dockerfile
+    environment:
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8080
+      - KAFKA_URL=kafka:29092
+    ports:
+      - '8080:8080'
+
   product-service:
     depends_on:
       - kafka
