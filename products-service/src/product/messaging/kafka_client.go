@@ -18,7 +18,12 @@ type KafkaClient struct {
 
 func NewKafkaClient(kafkaConfig config.KafkaConfig) *KafkaClient {
 	saramaConfig := sarama.NewConfig()
+
+	// Commons
 	sarama.Logger = log.New(os.Stdout, "[sarama] ", log.LstdFlags)
+	saramaConfig.Metadata.Retry.Max = 10
+	saramaConfig.Metadata.Retry.Backoff = time.Second * 5
+
 	// Consumer config
 	saramaConfig.Consumer.Offsets.Initial = sarama.OffsetOldest
 

@@ -15,12 +15,19 @@ type KafkaClient struct {
 
 func NewKafkaClient(cfg config.Config) *KafkaClient {
 	saramaConfig := sarama.NewConfig()
+
+	// Common
 	sarama.Logger = log.New(os.Stdout, "[sarama] ", log.LstdFlags)
+	saramaConfig.Metadata.Retry.Max = 10
+	saramaConfig.Metadata.Retry.Backoff = time.Second * 5
+
+	// Producer
 	saramaConfig.Producer.Flush.Frequency = time.Duration(cfg.GetKafkaConfig().KafkaFlushFrequencyMs) * time.Millisecond
 	saramaConfig.Producer.Compression = sarama.CompressionGZIP
 	saramaConfig.Producer.RequiredAcks = sarama.WaitForLocal
 	saramaConfig.Producer.Return.Errors = true
 	saramaConfig.Producer.Return.Successes = true
+
 	return &KafkaClient{
 		saramaConfig: saramaConfig,
 		kafkaConfig:  cfg.GetKafkaConfig(),
