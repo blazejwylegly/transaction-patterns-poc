@@ -110,7 +110,9 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: root@root.com
       PGADMIN_DEFAULT_PASSWORD: root
-
+    volumes:
+      - pgadmin:/var/lib/pgadmin
 volumes:
+  pgadmin:
   db:
     driver: local
