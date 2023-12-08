@@ -26,7 +26,8 @@ func (handler *PaymentRequestedHandler) Handle(inputEvent events.PaymentRequeste
 		var customer *database.Customer
 		err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
 			Preload("Payments").
-			First(&database.Customer{}).
+			Where(&database.Customer{CustomerId: inputEvent.CustomerID}).
+			First(&customer).
 			Error
 		if err != nil {
 			log.Printf("Customer with id %s not found\n", inputEvent.CustomerID)
