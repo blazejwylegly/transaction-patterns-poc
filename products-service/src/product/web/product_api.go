@@ -79,6 +79,7 @@ func (api ProductApi) handleSaveProduct() func(http.ResponseWriter, *http.Reques
 		if err != nil {
 			http.Error(response, err.Error(), http.StatusBadRequest)
 		}
+		product.ProductId = uuid.New()
 		api.productService.SaveOrUpdate(product)
 	}
 }
