@@ -17,7 +17,7 @@ func InitDbConnection(dbConfig config.DatabaseConfig) *gorm.DB {
 		log.Fatal(err)
 	}
 
-	if err := db.AutoMigrate(&Payment{}); err != nil {
+	if err := db.AutoMigrate(&Customer{}, &Payment{}); err != nil {
 		log.Fatal(err)
 	}
 	return db
