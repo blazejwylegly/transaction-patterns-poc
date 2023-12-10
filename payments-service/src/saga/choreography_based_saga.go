@@ -4,7 +4,9 @@ import (
 	"github.com/blazejwylegly/transactions-poc/payments-service/src/application"
 	"github.com/blazejwylegly/transactions-poc/payments-service/src/config"
 	"github.com/blazejwylegly/transactions-poc/payments-service/src/events"
+	"github.com/blazejwylegly/transactions-poc/payments-service/src/messaging"
 	"github.com/blazejwylegly/transactions-poc/payments-service/src/messaging/producer"
+	"github.com/google/uuid"
 )
 
 type Coordinator struct {
@@ -28,5 +30,13 @@ func (coordinator *Coordinator) HandleTransaction(event events.PaymentRequested,
 	if err != nil {
 		// TOOD: create and send rollback message
 	}
-	coordinator.producer.Send(paymentProcessed, headers, coordinator.topics.OrderResultsTopic)
+	messageHeaders := map[string]string{
+		messaging.StepIdHeader:               uuid.New().String(),
+		messaging.StepNameHeader:             "PAYMENT_PROCESSED",
+		messaging.StepExecutorHeader:         "PAYMENTS_SERVICE",
+		messaging.TransactionIdHeader:        headers[messaging.TransactionIdHeader],
+		messaging.TransactionNameHeader:      headers[messaging.TransactionNameHeader],
+		messaging.TransactionStartedAtHeader: headers[messaging.TransactionStartedAtHeader],
+	}
+	coordinator.producer.Send(paymentProcessed, messageHeaders, coordinator.topics.OrderResultsTopic)
 }

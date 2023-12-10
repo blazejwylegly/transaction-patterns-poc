@@ -21,6 +21,7 @@ func NewCoordinator(producer messaging.OrderProducer, kafkaConfig config.KafkaCo
 func (coordinator *Coordinator) BeginOrderPlacedTransaction(order models.Order) {
 	log.Printf("Trying to initiate txn with orderId %s\n", order.OrderID.String())
 	messageHeaders := map[string]string{
+		messaging.StepIdHeader:               uuid.New().String(),
 		messaging.StepNameHeader:             "ORDER_PLACED",
 		messaging.StepExecutorHeader:         "ORDER_SERVICE",
 		messaging.TransactionIdHeader:        uuid.New().String(),

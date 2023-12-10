@@ -4,7 +4,9 @@ import (
 	"github.com/blazejwylegly/transactions-poc/products-service/src/config"
 	"github.com/blazejwylegly/transactions-poc/products-service/src/product/application"
 	"github.com/blazejwylegly/transactions-poc/products-service/src/product/events"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/product/messaging"
 	"github.com/blazejwylegly/transactions-poc/products-service/src/product/messaging/producer"
+	"github.com/google/uuid"
 )
 
 type Coordinator struct {
@@ -28,5 +30,13 @@ func (coordinator *Coordinator) HandleTransaction(event events.OrderPlaced, head
 	if err != nil {
 		// TOOD: create and send rollback message
 	}
-	coordinator.producer.Send(orderItemsReserved, headers, coordinator.topics.ItemsReservedTopic)
+	messageHeaders := map[string]string{
+		messaging.StepIdHeader:               uuid.New().String(),
+		messaging.StepNameHeader:             "ORDER_ITEMS_RESERVED",
+		messaging.StepExecutorHeader:         "PRODUCTS_SERVICE",
+		messaging.TransactionIdHeader:        headers[messaging.TransactionIdHeader],
+		messaging.TransactionNameHeader:      headers[messaging.TransactionNameHeader],
+		messaging.TransactionStartedAtHeader: headers[messaging.TransactionStartedAtHeader],
+	}
+	coordinator.producer.Send(orderItemsReserved, messageHeaders, coordinator.topics.ItemsReservedTopic)
 }
