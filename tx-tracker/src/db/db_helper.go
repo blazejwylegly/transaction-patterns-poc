@@ -1,7 +1,7 @@
-package database
+package db
 
 import (
-	"github.com/blazejwylegly/transactions-poc/payments-service/src/config"
+	"github.com/blazejwylegly/transactions-poc/tx-tracker/src/config"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -17,7 +17,7 @@ func InitDbConnection(dbConfig config.DatabaseConfig) *gorm.DB {
 		log.Fatal(err)
 	}
 
-	if err := db.AutoMigrate(&Customer{}, &Payment{}); err != nil {
+	if err := db.AutoMigrate(&Transaction{}, &TransactionStep{}); err != nil {
 		log.Fatal(err)
 	}
 	return db
