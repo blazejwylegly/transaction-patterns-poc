@@ -53,6 +53,9 @@ services:
           
       echo -e 'Creating order-results topic'
       kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic order-results  --replication-factor 1 --partitions 4
+                
+      echo -e 'Creating order-fauked topic'
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic order-failed  --replication-factor 1 --partitions 4
       
       echo -e 'Successfully created the following topics:'
       kafka-topics --bootstrap-server kafka:29092 --list
