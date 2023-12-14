@@ -16,6 +16,12 @@ type PaymentProcessed struct {
 	PaidWith   PaymentType `json:"paid_with"`
 }
 
+type PaymentFailed struct {
+	OrderID    uuid.UUID `json:"order_id"`
+	CustomerID uuid.UUID `json:"customer_id"`
+	Details    string    `json:"details"`
+}
+
 type PaymentType string
 
 const (

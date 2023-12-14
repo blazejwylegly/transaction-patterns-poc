@@ -42,7 +42,8 @@ func (handler *PaymentRequestedHandler) Handle(inputEvent events.PaymentRequeste
 		if customer.AvailableFunds < inputEvent.TotalCost {
 			log.Printf("Customer %s has not enough funds to pay for orderId %s\n",
 				inputEvent.CustomerID, inputEvent.OrderID)
-			return errors.New(fmt.Sprintf("Customer with id %s not found", inputEvent.CustomerID))
+			return errors.New(fmt.Sprintf("Customer %s has not enough funds to pay for orderId %s\n",
+				inputEvent.CustomerID, inputEvent.OrderID))
 		}
 
 		// Lower his funds
