@@ -6,6 +6,7 @@ import (
 	"github.com/blazejwylegly/transactions-poc/tx-tracker/src/db"
 	"github.com/blazejwylegly/transactions-poc/tx-tracker/src/messaging"
 	"github.com/blazejwylegly/transactions-poc/tx-tracker/src/messaging/listener"
+	"github.com/blazejwylegly/transactions-poc/tx-tracker/src/transactions"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -29,18 +30,21 @@ func main() {
 		}
 	}(*kafkaConsumer)
 
+	// DATABASE
+	dbConnection := db.InitDbConnection(appConfig.GetDatabaseConfig())
+
+	// TX HANDLER
+	txHandler := transactions.NewTxnStepHandler(dbConnection)
+
 	// TOPIC LISTENERS
-	orderRequestListener := listener.NewListener(*kafkaClient, appConfig.GetKafkaConfig().KafkaTopics.OrderRequestsTopic)
+	orderRequestListener := listener.NewTopicListener(*kafkaClient, *txHandler, appConfig.GetKafkaConfig().KafkaTopics.OrderRequestsTopic)
 	orderRequestListener.StartConsuming()
 
-	itemsReservedListener := listener.NewListener(*kafkaClient, appConfig.GetKafkaConfig().KafkaTopics.ItemsReservedTopic)
+	itemsReservedListener := listener.NewTopicListener(*kafkaClient, *txHandler, appConfig.GetKafkaConfig().KafkaTopics.ItemsReservedTopic)
 	itemsReservedListener.StartConsuming()
 
-	orderResultsListener := listener.NewListener(*kafkaClient, appConfig.GetKafkaConfig().KafkaTopics.OrderResultsTopic)
+	orderResultsListener := listener.NewTopicListener(*kafkaClient, *txHandler, appConfig.GetKafkaConfig().KafkaTopics.OrderResultsTopic)
 	orderResultsListener.StartConsuming()
-
-	// DATABASE
-	_ = db.InitDbConnection(appConfig.GetDatabaseConfig())
 
 	// WEB
 	router := mux.NewRouter()

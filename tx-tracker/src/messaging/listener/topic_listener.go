@@ -1,20 +1,28 @@
 package listener
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/IBM/sarama"
-	messaging2 "github.com/blazejwylegly/transactions-poc/tx-tracker/src/messaging"
+	"github.com/blazejwylegly/transactions-poc/tx-tracker/src/db"
+	"github.com/blazejwylegly/transactions-poc/tx-tracker/src/messaging"
+	"github.com/blazejwylegly/transactions-poc/tx-tracker/src/transactions"
+	"github.com/google/uuid"
 	"log"
 	"sync"
+	"time"
 )
 
 type TopicListener struct {
-	kafkaClient messaging2.KafkaClient
-	topic       string
+	kafkaClient    messaging.KafkaClient
+	txnStepHandler transactions.TxnStepHandler
+	topic          string
 }
 
-func NewListener(client messaging2.KafkaClient, topic string) *TopicListener {
-	return &TopicListener{client, topic}
+func NewTopicListener(kafkaClient messaging.KafkaClient,
+	txnStepHandler transactions.TxnStepHandler,
+	topic string) *TopicListener {
+	return &TopicListener{kafkaClient: kafkaClient, txnStepHandler: txnStepHandler, topic: topic}
 }
 
 // StartConsuming fetches all available partitions from kafka broker, and runs a separate
@@ -61,11 +69,66 @@ func (listener *TopicListener) processKafkaMessages(messagesChannel chan *sarama
 	for msg := range messagesChannel {
 		messagePayload := msg.Value
 		headers := parseHeaders(msg.Headers)
-		fmt.Printf("Received message from topic %s with txnId %s and \npayload %s\n",
-			msg.Topic,
-			headers[messaging2.TransactionIdHeader],
-			messagePayload)
+		// TODO DLQ
+		txnContext, err := parseTransactionContext(headers)
+		if err != nil {
+			fmt.Printf("Error processing txn contetx for txnId %s and step %s\n",
+				headers[messaging.StepNameHeader],
+				headers[messaging.TransactionIdHeader])
+			return
+		}
+
+		txnStep, err := parseTransactionStep(messagePayload, headers)
+		if err != nil {
+			fmt.Printf("Error processing step message %s for txnId %s\n",
+				headers[messaging.StepNameHeader],
+				headers[messaging.TransactionIdHeader])
+			return
+		}
+
+		listener.txnStepHandler.HandleTxnStep(*txnContext, txnStep)
 	}
+}
+
+func parseTransactionContext(headers map[string]string) (*transactions.TxnContext, error) {
+	txnIdHeader := headers[messaging.TransactionIdHeader]
+	txnId, err := uuid.Parse(txnIdHeader)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &transactions.TxnContext{
+		TxnId:        txnId,
+		TxnName:      headers[messaging.TransactionNameHeader],
+		TxnStartedAt: time.Now(),
+	}, nil
+}
+
+func parseTransactionStep(messagePayload []byte, headers map[string]string) (*db.TransactionStep, error) {
+	headersJson, err := json.Marshal(headers)
+	if err != nil {
+		return nil, err
+	}
+
+	stepId, err := uuid.Parse(headers[messaging.StepIdHeader])
+	if err != nil {
+		return nil, err
+	}
+
+	txnId, err := uuid.Parse(headers[messaging.TransactionIdHeader])
+	if err != nil {
+		return nil, err
+	}
+
+	txnStep := db.TransactionStep{}
+	txnStep.StepId = stepId
+	txnStep.TxnId = txnId
+	txnStep.StepName = headers[messaging.StepNameHeader]
+	txnStep.StepExecutor = headers[messaging.StepExecutorHeader]
+	txnStep.Payload = string(messagePayload)
+	txnStep.Headers = string(headersJson)
+	return &txnStep, nil
 }
 
 func parseHeaders(recordHeaders []*sarama.RecordHeader) map[string]string {

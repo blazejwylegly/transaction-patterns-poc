@@ -25,7 +25,7 @@ func NewKafkaClient(kafkaConfig config.KafkaConfig) *KafkaClient {
 	saramaConfig.Metadata.Retry.Backoff = time.Second * 5
 
 	// Consumer config
-	saramaConfig.Consumer.Offsets.Initial = sarama.OffsetOldest
+	saramaConfig.Consumer.Offsets.Initial = sarama.OffsetNewest
 
 	return &KafkaClient{
 		saramaConfig: saramaConfig,
