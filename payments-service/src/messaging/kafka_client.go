@@ -25,7 +25,7 @@ func NewKafkaClient(kafkaConfig config.KafkaConfig) *KafkaClient {
 	saramaConfig.Metadata.Retry.Backoff = time.Second * 5
 
 	// Consumer config
-	saramaConfig.Consumer.Offsets.Initial = sarama.OffsetOldest
+	saramaConfig.Consumer.Offsets.Initial = sarama.OffsetNewest
 
 	// Producer config
 	saramaConfig.Producer.Flush.Frequency = time.Duration(kafkaConfig.KafkaFlushFrequencyMs) * time.Millisecond
@@ -80,7 +80,7 @@ func (kafkaClient *KafkaClient) GetPartitions(topic string) (chan int32, error) 
 }
 
 func (kafkaClient *KafkaClient) ConsumePartition(topic string, partition int32) (sarama.PartitionConsumer, error) {
-	partitionConsumer, err := kafkaClient.consumer.ConsumePartition(topic, partition, sarama.OffsetOldest)
+	partitionConsumer, err := kafkaClient.consumer.ConsumePartition(topic, partition, sarama.OffsetNewest)
 	if err != nil {
 		fmt.Printf("Error creating partition consumer for partition %d: %v\n", partition, err)
 		return nil, err
