@@ -22,3 +22,7 @@ type OrderItem struct {
 	ProductId       uuid.UUID `json:"product_id"`
 	QuantityOrdered int       `json:"quantity_ordered"`
 }
+
+type OrderFailed struct {
+	OrderID uuid.UUID `json:"order_id"`
+}

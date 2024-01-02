@@ -56,8 +56,13 @@ func main() {
 	sagaCoordinator := saga.NewCoordinator(*eventHandler, eventProducer, appConfig.GetKafkaConfig())
 
 	orderMessageProcessor := listener.NewOrderRequestProcessor(*sagaCoordinator)
-	topicListener := listener.NewListener(*kafkaClient, orderMessageProcessor, appConfig.Kafka.Topics.OrderRequestsTopic)
-	topicListener.StartConsuming()
+	orderListener := listener.NewListener(*kafkaClient, orderMessageProcessor, appConfig.Kafka.Topics.OrderRequestsTopic)
+	orderListener.StartConsuming()
+
+	orderFailedMessageProcessor := listener.NewOrderFailedProcessor(*sagaCoordinator)
+	orderFailedListener := listener.NewListener(*kafkaClient, orderFailedMessageProcessor, appConfig.Kafka.Topics.OrderFailedTopic)
+	orderFailedListener.StartConsuming()
+
 	// WEB
 	router := mux.NewRouter()
 

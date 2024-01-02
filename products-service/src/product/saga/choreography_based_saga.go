@@ -40,3 +40,7 @@ func (coordinator *Coordinator) HandleTransaction(event events.OrderPlaced, head
 	}
 	coordinator.producer.Send(orderItemsReserved, messageHeaders, coordinator.topics.ItemsReservedTopic)
 }
+
+func (coordinator *Coordinator) HandleRollback(event events.OrderFailed, headers map[string]string) {
+	// TODO add compensating action
+}
