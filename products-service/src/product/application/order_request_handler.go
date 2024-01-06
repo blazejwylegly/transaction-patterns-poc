@@ -103,3 +103,72 @@ func (handler *OrderEventHandler) updateTransactionLog(tx *gorm.DB, event events
 	}
 	return nil
 }
+
+func (handler *OrderEventHandler) HandleRollback(orderFailedEvent events.OrderFailed) error {
+	tx := handler.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.Error; err != nil {
+		return err
+	}
+
+	txLogItem, err := handler.restoreTransactionItem(tx, orderFailedEvent)
+
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	var orderItems []events.OrderItem
+	_ = json.Unmarshal([]byte(txLogItem.OrderItems), &orderItems)
+
+	for _, orderItem := range orderItems {
+		err := handler.releaseOrderItem(tx, orderItem)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	return nil
+}
+
+func (handler *OrderEventHandler) restoreTransactionItem(tx *gorm.DB, event events.OrderFailed) (*database.TxLogItem, error) {
+	var txLogItem *database.TxLogItem
+	err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
+		Where(&database.TxLogItem{OrderID: event.OrderID}).
+		First(&txLogItem).
+		Error
+	if err != nil {
+		log.Printf("FATAL ERROR - Cannot rollback transaction for orderId %s", event.OrderID)
+		return nil, err
+	}
+	return txLogItem, nil
+}
+
+func (handler *OrderEventHandler) releaseOrderItem(tx *gorm.DB, item events.OrderItem) error {
+	var product *database.Product
+	err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
+		Where(&database.Product{ProductID: item.ProductId}).
+		First(&product).
+		Error
+	if err != nil {
+		log.Printf("Cannot rollback - Product with id %s not found!", item.ProductId)
+		return err
+	}
+
+	err = tx.Model(product).Update("quantity", product.Quantity+item.QuantityOrdered).Error
+	if err != nil {
+		log.Printf("Cannot rollback - error trying to update quanitty of product with id %s", item.ProductId)
+		return err
+	}
+	return nil
+}
