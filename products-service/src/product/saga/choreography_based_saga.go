@@ -43,9 +43,12 @@ func (coordinator *Coordinator) HandleTransaction(inputEvent events.OrderPlaced,
 			OrderID: inputEvent.OrderID,
 			Details: err.Error(),
 		}
+		outputHeaders[messaging.StepResultHeader] = "FAILED"
 		coordinator.producer.Send(paymentFailed, outputHeaders, coordinator.topics.OrderFailedTopic)
 		return
 	}
+
+	outputHeaders[messaging.StepResultHeader] = "SUCCESS"
 	coordinator.producer.Send(orderItemsReserved, outputHeaders, coordinator.topics.ItemsReservedTopic)
 }
 
