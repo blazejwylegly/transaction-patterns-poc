@@ -7,6 +7,7 @@ import (
 	"github.com/blazejwylegly/transactions-poc/tx-tracker/src/messaging"
 	"github.com/blazejwylegly/transactions-poc/tx-tracker/src/messaging/listener"
 	"github.com/blazejwylegly/transactions-poc/tx-tracker/src/transactions"
+	"github.com/blazejwylegly/transactions-poc/tx-tracker/src/web"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -32,6 +33,7 @@ func main() {
 
 	// DATABASE
 	dbConnection := db.InitDbConnection(appConfig.GetDatabaseConfig())
+	txRepository := db.NewDbRepository(dbConnection)
 
 	// TX HANDLER
 	txHandler := transactions.NewTxnStepHandler(dbConnection)
@@ -46,8 +48,12 @@ func main() {
 	orderResultsListener := listener.NewTopicListener(*kafkaClient, *txHandler, appConfig.GetKafkaConfig().KafkaTopics.OrderResultsTopic)
 	orderResultsListener.StartConsuming()
 
+	orderFailedListener := listener.NewTopicListener(*kafkaClient, *txHandler, appConfig.GetKafkaConfig().KafkaTopics.OrderFailedTopic)
+	orderFailedListener.StartConsuming()
+
 	// WEB
 	router := mux.NewRouter()
+	web.InitTxApi(router, txRepository)
 
 	err = http.ListenAndServe(appConfig.GetServerUrl(), router)
 	if err != nil {

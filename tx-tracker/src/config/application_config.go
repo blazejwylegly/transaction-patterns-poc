@@ -29,6 +29,7 @@ type Config struct {
 			OrderRequestsTopic string `yaml:"orderRequestsTopic" envconfig:"KAFKA_ORDERS_TOPIC"`
 			ItemsReservedTopic string `yaml:"itemsReservedTopic" envconfig:"KAFKA_ITEMS_RESERVED_TOPIC"`
 			OrderResultsTopic  string `yaml:"orderResultsTopic" envconfig:"KAFKA_ORDER_RESULTS_TOPIC"`
+			OrderFailedTopic   string `yaml:"orderFailedTopic" envconfig:"KAFKA_ORDER_FAILED_TOPIC"`
 		} `yaml:"topics"`
 	} `yaml:"kafka"`
 }
@@ -43,6 +44,7 @@ type KafkaTopics struct {
 	OrderRequestsTopic string
 	ItemsReservedTopic string
 	OrderResultsTopic  string
+	OrderFailedTopic   string
 }
 
 type DatabaseConfig struct {
@@ -75,6 +77,7 @@ func (cfg *Config) GetKafkaConfig() KafkaConfig {
 			OrderRequestsTopic: cfg.Kafka.Topics.OrderRequestsTopic,
 			ItemsReservedTopic: cfg.Kafka.Topics.ItemsReservedTopic,
 			OrderResultsTopic:  cfg.Kafka.Topics.OrderResultsTopic,
+			OrderFailedTopic:   cfg.Kafka.Topics.OrderFailedTopic,
 		},
 	}
 }
