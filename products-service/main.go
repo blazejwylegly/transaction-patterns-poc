@@ -49,12 +49,19 @@ func main() {
 
 	// SERVICE
 	eventProducer := producer.NewSaramaProducer(*kafkaProducer)
+
 	productService := application.NewProductService(productRepo)
 	eventHandler := application.NewOrderEventHandler(db)
+
 	sagaCoordinator := saga.NewCoordinator(*eventHandler, eventProducer, appConfig.GetKafkaConfig())
 
-	orderListener := listener.NewListener(*kafkaClient, appConfig.GetKafkaConfig(), *sagaCoordinator)
+	orderMessageProcessor := listener.NewOrderRequestProcessor(*sagaCoordinator)
+	orderListener := listener.NewListener(*kafkaClient, orderMessageProcessor, appConfig.Kafka.Topics.OrderRequestsTopic)
 	orderListener.StartConsuming()
+
+	orderFailedMessageProcessor := listener.NewOrderFailedProcessor(*sagaCoordinator)
+	orderFailedListener := listener.NewListener(*kafkaClient, orderFailedMessageProcessor, appConfig.Kafka.Topics.OrderFailedTopic)
+	orderFailedListener.StartConsuming()
 
 	// WEB
 	router := mux.NewRouter()

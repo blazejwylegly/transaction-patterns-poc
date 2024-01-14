@@ -19,3 +19,4 @@ kafka:
     orderRequestsTopic: 'order-request'
     itemsReservedTopic: 'order-items-reserved'
     orderResultsTopic: 'order-results'
+    orderFailedTopic: 'order-failed'

@@ -24,6 +24,7 @@ func (coordinator *Coordinator) BeginOrderPlacedTransaction(order models.Order) 
 		messaging.StepIdHeader:               uuid.New().String(),
 		messaging.StepNameHeader:             "ORDER_PLACED",
 		messaging.StepExecutorHeader:         "ORDER_SERVICE",
+		messaging.StepResultHeader:           "SUCCESS",
 		messaging.TransactionIdHeader:        uuid.New().String(),
 		messaging.TransactionNameHeader:      "PRODUCT_PURCHASED",
 		messaging.TransactionStartedAtHeader: time.Now().String(),

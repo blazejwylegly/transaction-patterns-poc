@@ -64,7 +64,7 @@ func (kafkaClient *KafkaClient) GetPartitions(topic string) (chan int32, error) 
 }
 
 func (kafkaClient *KafkaClient) ConsumePartition(topic string, partition int32) (sarama.PartitionConsumer, error) {
-	partitionConsumer, err := kafkaClient.consumer.ConsumePartition(topic, partition, sarama.OffsetOldest)
+	partitionConsumer, err := kafkaClient.consumer.ConsumePartition(topic, partition, sarama.OffsetNewest)
 	if err != nil {
 		fmt.Printf("Error creating partition consumer for partition %d: %v\n", partition, err)
 		return nil, err
