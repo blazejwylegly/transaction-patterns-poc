@@ -10,6 +10,7 @@ type Transaction struct {
 	TxnName   string
 	StartedAt time.Time
 	Steps     []TransactionStep `gorm:"foreignKey:TxnId"`
+	Status    string
 }
 
 type TransactionStep struct {
@@ -17,6 +18,7 @@ type TransactionStep struct {
 	TxnId        uuid.UUID
 	StepName     string
 	StepExecutor string
+	StepStatus   string
 	Payload      string `gorm:"type:jsonb" json:"payload"`
 	Headers      string `gorm:"type:jsonb" json:"headers"`
 }
