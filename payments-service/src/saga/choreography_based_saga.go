@@ -30,7 +30,7 @@ func (coordinator *Coordinator) HandleTransaction(inputEvent events.PaymentReque
 	paymentProcessed, err := coordinator.paymentRequestedHandler.Handle(inputEvent)
 	messageHeaders := map[string]string{
 		messaging.StepIdHeader:               uuid.New().String(),
-		messaging.StepNameHeader:             "PAYMENT_PROCESSING",
+		messaging.StepNameHeader:             "PAYMENT_PROCESSED",
 		messaging.StepExecutorHeader:         "PAYMENTS_SERVICE",
 		messaging.TransactionIdHeader:        headers[messaging.TransactionIdHeader],
 		messaging.TransactionNameHeader:      headers[messaging.TransactionNameHeader],

@@ -31,16 +31,27 @@ func (handler TxnStepHandler) HandleTxnStep(txnContext TxnContext, step *db.Tran
 				TxnName:   txnContext.TxnName,
 				StartedAt: txnContext.TxnStartedAt,
 				Steps:     []db.TransactionStep{},
+				Status:    step.StepStatus,
 			}
 		}
 		err = tx.Save(txn).Error
+		if err != nil {
+			return err
+		}
 
-		// add new tx step
+		// Add new tx step
 		txn.Steps = append(txn.Steps, *step)
 		err = tx.Save(step).Error
 		if err != nil {
 			return err
 		}
+
+		txn.Status = determineTransactionStatus(txn.Steps)
+		err = tx.Save(txn).Error
+		if err != nil {
+			return err
+		}
+
 		return nil
 	})
 	if err != nil {
@@ -48,6 +59,15 @@ func (handler TxnStepHandler) HandleTxnStep(txnContext TxnContext, step *db.Tran
 			step.StepName,
 			txnContext.TxnId.String())
 	}
+}
+
+func determineTransactionStatus(steps []db.TransactionStep) string {
+	for _, step := range steps {
+		if step.StepStatus == "FAILED" {
+			return step.StepStatus
+		}
+	}
+	return "SUCCESS"
 }
 
 func NewTxnStepHandler(db *gorm.DB) *TxnStepHandler {

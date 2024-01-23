@@ -126,6 +126,7 @@ func parseTransactionStep(messagePayload []byte, headers map[string]string) (*db
 	txnStep.TxnId = txnId
 	txnStep.StepName = headers[messaging.StepNameHeader]
 	txnStep.StepExecutor = headers[messaging.StepExecutorHeader]
+	txnStep.StepStatus = headers[messaging.StepResultHeader]
 	txnStep.Payload = string(messagePayload)
 	txnStep.Headers = string(headersJson)
 	return &txnStep, nil
