@@ -9,16 +9,21 @@ import (
 	"time"
 )
 
-type Coordinator struct {
-	producer         messaging.OrderProducer
+type Coordinator interface {
+	BeginOrderPlacedTransaction(order models.Order)
+}
+
+type ChoreographyCoordinator struct {
+	producer         messaging.EventProducer
 	orderPlacedTopic string
 }
 
-func NewCoordinator(producer messaging.OrderProducer, kafkaConfig config.KafkaConfig) *Coordinator {
-	return &Coordinator{producer, kafkaConfig.KafkaTopics.OrderRequestsTopic}
+func NewChoreographyCoordinator(producer messaging.EventProducer,
+	kafkaConfig config.KafkaConfig) *ChoreographyCoordinator {
+	return &ChoreographyCoordinator{producer, kafkaConfig.KafkaTopics.OrderRequestsTopic}
 }
 
-func (coordinator *Coordinator) BeginOrderPlacedTransaction(order models.Order) {
+func (overseer *ChoreographyCoordinator) BeginOrderPlacedTransaction(order models.Order) {
 	log.Printf("Trying to initiate txn with orderId %s\n", order.OrderID.String())
 	messageHeaders := map[string]string{
 		messaging.StepIdHeader:               uuid.New().String(),
@@ -30,6 +35,6 @@ func (coordinator *Coordinator) BeginOrderPlacedTransaction(order models.Order) 
 		messaging.TransactionStartedAtHeader: time.Now().String(),
 	}
 
-	coordinator.producer.Send(order, messageHeaders, coordinator.orderPlacedTopic)
+	overseer.producer.Send(order, messageHeaders, overseer.orderPlacedTopic)
 	log.Printf("Transaction with with orderId %s initiated successfully\n", order.OrderID.String())
 }

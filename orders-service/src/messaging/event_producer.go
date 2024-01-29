@@ -4,28 +4,23 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/IBM/sarama"
-	"github.com/blazejwylegly/transactions-poc/orders-service/src/config"
 	"log"
 	"time"
 )
 
-type OrderProducer interface {
+type EventProducer interface {
 	Send(interface{}, map[string]string, string)
 }
 
-type SaramaOrderProducer struct {
-	kafkaProducer     sarama.SyncProducer
-	orderRequestTopic string
+type SaramaEventProducer struct {
+	kafkaProducer sarama.SyncProducer
 }
 
-func NewSaramaProducer(producer sarama.SyncProducer, config config.KafkaConfig) *SaramaOrderProducer {
-	return &SaramaOrderProducer{
-		kafkaProducer:     producer,
-		orderRequestTopic: config.KafkaTopics.OrderRequestsTopic,
-	}
+func NewSaramaProducer(producer sarama.SyncProducer) *SaramaEventProducer {
+	return &SaramaEventProducer{kafkaProducer: producer}
 }
 
-func (producer *SaramaOrderProducer) Send(data interface{}, headers map[string]string, topic string) {
+func (producer *SaramaEventProducer) Send(data interface{}, headers map[string]string, topic string) {
 	encodedMessage, err := createMessage(data, headers, topic)
 	if err != nil {
 		fmt.Println(err)
@@ -45,8 +40,8 @@ func (producer *SaramaOrderProducer) Send(data interface{}, headers map[string]s
 	)
 }
 
-func createMessage(data interface{}, headers map[string]string, topicName string) (*sarama.ProducerMessage, error) {
-	bytes, err := json.Marshal(data)
+func createMessage[T any](message T, headers map[string]string, topicName string) (*sarama.ProducerMessage, error) {
+	bytes, err := json.Marshal(message)
 	if err != nil {
 		fmt.Println(err)
 		return nil, nil

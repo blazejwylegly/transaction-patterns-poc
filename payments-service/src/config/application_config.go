@@ -8,7 +8,18 @@ import (
 	"os"
 )
 
+type ApplicationMode int
+
+const (
+	Choreography  ApplicationMode = 0
+	Orchestration ApplicationMode = 1
+)
+
 type Config struct {
+	Application struct {
+		Mode ApplicationMode `yaml:"mode" envconfig:"APPLICATION_MODE"`
+	}
+
 	Server struct {
 		Host string `yaml:"host" envconfig:"SERVER_HOST"`
 		Port string `yaml:"port" envconfig:"SERVER_PORT"`
@@ -87,6 +98,14 @@ func (cfg *Config) GetDatabaseConfig() DatabaseConfig {
 		DbPassword: cfg.Database.DbPassword,
 		DbName:     cfg.Database.DbName,
 	}
+}
+
+func (cfg *Config) ChoreographyModeEnabled() bool {
+	return cfg.Application.Mode == Choreography
+}
+
+func (cfg *Config) OrchestrationModeEnabled() bool {
+	return cfg.Application.Mode == Orchestration
 }
 
 func New(configFileName string) *Config {

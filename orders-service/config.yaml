@@ -1,7 +1,20 @@
+# 0 - choreography
+# 1 - orchestration
+application:
+  mode: 1
+
 # Server configurations
 server:
   host: localhost
   port: 8080
+
+# Database credentials
+database:
+  host: localhost
+  port: 5432
+  username: postgres
+  password: postgres
+  name: poc
 
 # Database credentials
 kafka:

@@ -1,3 +1,7 @@
+# 0 - choreography
+# 1 - orchestration
+mode: 0
+
 # Server configurations
 server:
   host: localhost
