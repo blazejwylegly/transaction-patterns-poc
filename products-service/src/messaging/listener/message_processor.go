@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/IBM/sarama"
-	"github.com/blazejwylegly/transactions-poc/products-service/src/product/events"
-	"github.com/blazejwylegly/transactions-poc/products-service/src/product/saga"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/events"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/saga"
 )
 
 type OrderRequestProcessor struct {

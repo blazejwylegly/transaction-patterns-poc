@@ -3,7 +3,7 @@ package listener
 import (
 	"fmt"
 	"github.com/IBM/sarama"
-	"github.com/blazejwylegly/transactions-poc/products-service/src/product/messaging"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/messaging"
 	"log"
 	"sync"
 )

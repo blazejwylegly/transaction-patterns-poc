@@ -2,14 +2,14 @@ package main
 
 import (
 	"github.com/IBM/sarama"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/application"
 	"github.com/blazejwylegly/transactions-poc/products-service/src/config"
-	"github.com/blazejwylegly/transactions-poc/products-service/src/product/application"
-	"github.com/blazejwylegly/transactions-poc/products-service/src/product/database"
-	"github.com/blazejwylegly/transactions-poc/products-service/src/product/messaging"
-	"github.com/blazejwylegly/transactions-poc/products-service/src/product/messaging/listener"
-	"github.com/blazejwylegly/transactions-poc/products-service/src/product/messaging/producer"
-	"github.com/blazejwylegly/transactions-poc/products-service/src/product/saga"
-	"github.com/blazejwylegly/transactions-poc/products-service/src/product/web"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/database"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/messaging"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/messaging/listener"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/messaging/producer"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/saga"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/web"
 
 	"github.com/gorilla/mux"
 	"log"

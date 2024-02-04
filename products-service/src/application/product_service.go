@@ -1,8 +1,8 @@
 package application
 
 import (
-	"github.com/blazejwylegly/transactions-poc/products-service/src/product/database"
-	"github.com/blazejwylegly/transactions-poc/products-service/src/product/dto"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/database"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/dto"
 	"github.com/google/uuid"
 	"log"
 )

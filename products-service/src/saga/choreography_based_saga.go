@@ -1,11 +1,11 @@
 package saga
 
 import (
+	"github.com/blazejwylegly/transactions-poc/products-service/src/application"
 	"github.com/blazejwylegly/transactions-poc/products-service/src/config"
-	"github.com/blazejwylegly/transactions-poc/products-service/src/product/application"
-	"github.com/blazejwylegly/transactions-poc/products-service/src/product/events"
-	"github.com/blazejwylegly/transactions-poc/products-service/src/product/messaging"
-	"github.com/blazejwylegly/transactions-poc/products-service/src/product/messaging/producer"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/events"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/messaging"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/messaging/producer"
 	"github.com/google/uuid"
 	"log"
 )

@@ -2,8 +2,8 @@ package web
 
 import (
 	"encoding/json"
-	"github.com/blazejwylegly/transactions-poc/products-service/src/product/application"
-	"github.com/blazejwylegly/transactions-poc/products-service/src/product/dto"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/application"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/dto"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"net/http"
