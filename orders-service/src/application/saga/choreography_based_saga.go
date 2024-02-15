@@ -1,16 +1,16 @@
 package saga
 
 import (
+	"github.com/blazejwylegly/transactions-poc/orders-service/src/application"
 	"github.com/blazejwylegly/transactions-poc/orders-service/src/config"
 	"github.com/blazejwylegly/transactions-poc/orders-service/src/messaging"
-	"github.com/blazejwylegly/transactions-poc/orders-service/src/models"
 	"github.com/google/uuid"
 	"log"
 	"time"
 )
 
 type Coordinator interface {
-	BeginOrderPlacedTransaction(order models.Order)
+	BeginOrderPlacedTransaction(order application.Order)
 }
 
 type ChoreographyCoordinator struct {
@@ -20,21 +20,21 @@ type ChoreographyCoordinator struct {
 
 func NewChoreographyCoordinator(producer messaging.EventProducer,
 	kafkaConfig config.KafkaConfig) *ChoreographyCoordinator {
-	return &ChoreographyCoordinator{producer, kafkaConfig.KafkaTopics.OrderRequestsTopic}
+	return &ChoreographyCoordinator{producer, kafkaConfig.ChoreographyTopics.OrderPlaced}
 }
 
-func (overseer *ChoreographyCoordinator) BeginOrderPlacedTransaction(order models.Order) {
+func (coordinator *ChoreographyCoordinator) BeginOrderPlacedTransaction(order application.Order) {
 	log.Printf("Trying to initiate txn with orderId %s\n", order.OrderID.String())
 	messageHeaders := map[string]string{
 		messaging.StepIdHeader:               uuid.New().String(),
 		messaging.StepNameHeader:             "ORDER_PLACED",
 		messaging.StepExecutorHeader:         "ORDER_SERVICE",
-		messaging.StepResultHeader:           "SUCCESS",
+		messaging.StepStatusHeader:           "SUCCESS",
 		messaging.TransactionIdHeader:        uuid.New().String(),
 		messaging.TransactionNameHeader:      "PRODUCT_PURCHASED",
 		messaging.TransactionStartedAtHeader: time.Now().String(),
 	}
 
-	overseer.producer.Send(order, messageHeaders, overseer.orderPlacedTopic)
+	coordinator.producer.Send(order, messageHeaders, coordinator.orderPlacedTopic)
 	log.Printf("Transaction with with orderId %s initiated successfully\n", order.OrderID.String())
 }

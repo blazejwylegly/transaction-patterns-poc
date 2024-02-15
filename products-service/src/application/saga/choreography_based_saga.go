@@ -3,7 +3,6 @@ package saga
 import (
 	"github.com/blazejwylegly/transactions-poc/products-service/src/application"
 	"github.com/blazejwylegly/transactions-poc/products-service/src/config"
-	"github.com/blazejwylegly/transactions-poc/products-service/src/events"
 	"github.com/blazejwylegly/transactions-poc/products-service/src/messaging"
 	"github.com/blazejwylegly/transactions-poc/products-service/src/messaging/producer"
 	"github.com/google/uuid"
@@ -26,7 +25,7 @@ func NewCoordinator(orderEventHandler application.OrderEventHandler,
 	}
 }
 
-func (coordinator *Coordinator) HandleTransaction(inputEvent events.OrderPlaced, inputHeaders map[string]string) {
+func (coordinator *Coordinator) HandleTransaction(inputEvent application.OrderPlaced, inputHeaders map[string]string) {
 	orderItemsReserved, err := coordinator.orderEventHandler.Handle(inputEvent)
 	outputHeaders := map[string]string{
 		messaging.StepIdHeader:               uuid.New().String(),
@@ -39,12 +38,12 @@ func (coordinator *Coordinator) HandleTransaction(inputEvent events.OrderPlaced,
 
 	if err != nil {
 		log.Printf("Txn with id %s failed - initiating rollback", inputHeaders[messaging.TransactionIdHeader])
-		paymentFailed := &events.OrderReservationFailed{
+		orderReservationFailed := &application.OrderReservationFailed{
 			OrderID: inputEvent.OrderID,
 			Details: err.Error(),
 		}
 		outputHeaders[messaging.StepResultHeader] = "FAILED"
-		coordinator.producer.Send(paymentFailed, outputHeaders, coordinator.topics.OrderFailedTopic)
+		coordinator.producer.Send(orderReservationFailed, outputHeaders, coordinator.topics.OrderFailedTopic)
 		return
 	}
 
@@ -52,7 +51,7 @@ func (coordinator *Coordinator) HandleTransaction(inputEvent events.OrderPlaced,
 	coordinator.producer.Send(orderItemsReserved, outputHeaders, coordinator.topics.ItemsReservedTopic)
 }
 
-func (coordinator *Coordinator) HandleRollback(event events.OrderFailed, headers map[string]string) {
+func (coordinator *Coordinator) HandleRollback(event application.OrderFailed, headers map[string]string) {
 	if headers[messaging.StepExecutorHeader] != "PRODUCTS_SERVICE" {
 		err := coordinator.orderEventHandler.HandleRollback(event)
 		if err != nil {

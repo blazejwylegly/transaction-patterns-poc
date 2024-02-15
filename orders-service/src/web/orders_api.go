@@ -1,8 +1,8 @@
 package web
 
 import (
-	"github.com/blazejwylegly/transactions-poc/orders-service/src/models"
-	"github.com/blazejwylegly/transactions-poc/orders-service/src/saga"
+	"github.com/blazejwylegly/transactions-poc/orders-service/src/application"
+	"github.com/blazejwylegly/transactions-poc/orders-service/src/application/saga"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -30,7 +30,7 @@ func (api *OrderApi) initializeMappings() {
 func (api *OrderApi) handlePlaceOrderMapping() func(writer http.ResponseWriter, request *http.Request) {
 	return func(writer http.ResponseWriter, request *http.Request) {
 
-		order := models.NewOrder()
+		order := application.NewOrder()
 		err := readOrder(request, order)
 		if err != nil {
 			log.Fatal("Error creating new order for customer!")

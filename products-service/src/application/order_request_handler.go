@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/blazejwylegly/transactions-poc/products-service/src/database"
-	"github.com/blazejwylegly/transactions-poc/products-service/src/events"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -20,7 +19,7 @@ func NewOrderEventHandler(db *gorm.DB) *OrderEventHandler {
 	return &OrderEventHandler{db}
 }
 
-func (handler *OrderEventHandler) Handle(orderPlacedEvent events.OrderPlaced) (*events.OrderItemsReserved, error) {
+func (handler *OrderEventHandler) Handle(orderPlacedEvent OrderPlaced) (*OrderItemsReserved, error) {
 	tx := handler.db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -52,7 +51,7 @@ func (handler *OrderEventHandler) Handle(orderPlacedEvent events.OrderPlaced) (*
 		return nil, err
 	}
 
-	return &events.OrderItemsReserved{
+	return &OrderItemsReserved{
 		OrderID:    orderPlacedEvent.OrderID,
 		CustomerID: orderPlacedEvent.CustomerID,
 		TotalCost:  totalCost,
@@ -85,7 +84,7 @@ func (handler *OrderEventHandler) reserveProduct(tx *gorm.DB, productId uuid.UUI
 	return product, nil
 }
 
-func (handler *OrderEventHandler) updateTransactionLog(tx *gorm.DB, event events.OrderPlaced) error {
+func (handler *OrderEventHandler) updateTransactionLog(tx *gorm.DB, event OrderPlaced) error {
 	orderItemsJsonBody, err := json.Marshal(event.OrderItems)
 	if err != nil {
 		return err
@@ -104,7 +103,7 @@ func (handler *OrderEventHandler) updateTransactionLog(tx *gorm.DB, event events
 	return nil
 }
 
-func (handler *OrderEventHandler) HandleRollback(orderFailedEvent events.OrderFailed) error {
+func (handler *OrderEventHandler) HandleRollback(orderFailedEvent OrderFailed) error {
 	tx := handler.db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -123,7 +122,7 @@ func (handler *OrderEventHandler) HandleRollback(orderFailedEvent events.OrderFa
 		return err
 	}
 
-	var orderItems []events.OrderItem
+	var orderItems []OrderItem
 	_ = json.Unmarshal([]byte(txLogItem.OrderItems), &orderItems)
 
 	for _, orderItem := range orderItems {
@@ -141,7 +140,7 @@ func (handler *OrderEventHandler) HandleRollback(orderFailedEvent events.OrderFa
 	return nil
 }
 
-func (handler *OrderEventHandler) restoreTransactionItem(tx *gorm.DB, event events.OrderFailed) (*database.TxLogItem, error) {
+func (handler *OrderEventHandler) restoreTransactionItem(tx *gorm.DB, event OrderFailed) (*database.TxLogItem, error) {
 	var txLogItem *database.TxLogItem
 	err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
 		Where(&database.TxLogItem{OrderID: event.OrderID}).
@@ -154,7 +153,7 @@ func (handler *OrderEventHandler) restoreTransactionItem(tx *gorm.DB, event even
 	return txLogItem, nil
 }
 
-func (handler *OrderEventHandler) releaseOrderItem(tx *gorm.DB, item events.OrderItem) error {
+func (handler *OrderEventHandler) releaseOrderItem(tx *gorm.DB, item OrderItem) error {
 	var product *database.Product
 	err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
 		Where(&database.Product{ProductID: item.ProductId}).

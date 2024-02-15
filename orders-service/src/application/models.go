@@ -1,4 +1,4 @@
-package models
+package application
 
 import (
 	"github.com/google/uuid"
@@ -12,6 +12,11 @@ type Order struct {
 	PlacedAt   time.Time   `json:"placed_at"`
 }
 
+type OrderItem struct {
+	ProductId       uuid.UUID `json:"product_id"`
+	QuantityOrdered int       `json:"quantity_ordered"`
+}
+
 func NewOrder() *Order {
 	return &Order{
 		OrderID:    uuid.New(),
@@ -19,3 +24,5 @@ func NewOrder() *Order {
 		PlacedAt:   time.Now(),
 	}
 }
+
+type PaymentType string

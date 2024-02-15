@@ -16,8 +16,14 @@ kafka:
   url: localhost:9092
   flushFrequencyMs: 500
   topics:
-    orderRequestsTopic: 'order-request'
-    itemsReservedTopic: 'order-items-reserved'
-    paymentProcessedTopic: 'payment-processed'
-    orderResultsTopic: 'order-results'
-    orderFailedTopic: 'order-failed'
+    orderPlaced: 'order-placed'
+    itemsReserved: 'items-reserved'
+    paymentProcessed: 'payment-processed'
+    txnError: 'txn-error'
+
+    inventoryUpdateRequest: 'inventory-update-request'
+    inventoryUpdateStatus: 'inventory-update-status'
+    paymentRequest: 'payment-request'
+    paymentStatus: 'payment-status'
+
+    orderStatus: 'order-status'

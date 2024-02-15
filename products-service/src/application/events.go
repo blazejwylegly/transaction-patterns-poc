@@ -1,4 +1,4 @@
-package events
+package application
 
 import (
 	"github.com/google/uuid"

@@ -1,9 +1,8 @@
-package listener
+package messaging
 
 import (
 	"fmt"
 	"github.com/IBM/sarama"
-	"github.com/blazejwylegly/transactions-poc/orders-service/src/messaging"
 	"log"
 	"sync"
 )
@@ -13,13 +12,13 @@ type MessageProcessor interface {
 }
 
 type TopicListener struct {
-	kafkaClient      messaging.KafkaClient
-	messageProcessor MessageProcessor
+	kafkaClient      KafkaClient
+	messageProcessor func(chan *sarama.ConsumerMessage)
 	topic            string
 }
 
-func NewTopicListener(kafkaClient messaging.KafkaClient,
-	messageProcessor MessageProcessor,
+func NewTopicListener(kafkaClient KafkaClient,
+	messageProcessor func(chan *sarama.ConsumerMessage),
 	topic string) *TopicListener {
 	return &TopicListener{kafkaClient: kafkaClient, messageProcessor: messageProcessor, topic: topic}
 }
@@ -56,28 +55,10 @@ func (listener *TopicListener) consumePartition(wg *sync.WaitGroup, partition in
 	defer func(partitionConsumer sarama.PartitionConsumer) {
 		err := partitionConsumer.Close()
 		if err != nil {
-			fmt.Printf("Error closing partition consumer for partition %s %v\n", partition, err)
+			fmt.Printf("Error closing partition consumer for partition %d %v\n", partition, err)
 		}
 	}(partitionConsumer)
 
-	go listener.processKafkaMessages(messagesChannel)
+	go listener.messageProcessor(messagesChannel)
 	select {}
-}
-
-func (listener *TopicListener) processKafkaMessages(messagesChannel chan *sarama.ConsumerMessage) {
-	for msg := range messagesChannel {
-		messagePayload := msg.Value
-		_ = parseHeaders(msg.Headers)
-		fmt.Printf("Received message value %s", messagePayload)
-		listener.messageProcessor.process()
-		// TODO DLQ
-	}
-}
-
-func parseHeaders(recordHeaders []*sarama.RecordHeader) map[string]string {
-	headers := make(map[string]string, len(recordHeaders))
-	for _, recordHeader := range recordHeaders {
-		headers[string(recordHeader.Key)] = string(recordHeader.Value)
-	}
-	return headers
 }

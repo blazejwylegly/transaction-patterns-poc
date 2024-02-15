@@ -45,20 +45,40 @@ services:
       # blocks until kafka is reachable
       kafka-topics --bootstrap-server kafka:29092 --list
       
-      echo -e 'Creating order-request topic'
-      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic order-request --replication-factor 1 --partitions 4
+      echo -e '################## Creating topics used globally ##################'
+      
+      echo -e 'Creating order-status topic'
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic order-status --replication-factor 1 --partitions 4
+
+
+      echo -e '################## Creating topics used by choreography flow ##################'
+
+      echo -e 'Creating order-placed topic'
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic order-placed  --replication-factor 1 --partitions 4
       
       echo -e 'Creating items-reserved topic'
-      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic order-items-reserved --replication-factor 1 --partitions 4
-          
-      echo -e 'Creating order-results topic'
-      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic order-results  --replication-factor 1 --partitions 4
-                
-      echo -e 'Creating order-failed topic'
-      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic order-failed  --replication-factor 1 --partitions 4
-                      
-      echo -e 'Creating payment-completed topic'
-      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic payment-completed --replication-factor 1 --partitions 4
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic items-reserved --replication-factor 1 --partitions 4
+            
+      echo -e 'Creating payment-processed topic'
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic payment-processed --replication-factor 1 --partitions 4
+
+      echo -e 'Creating txn-error topic'
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic txn-error --replication-factor 1 --partitions 4
+      
+      
+      echo -e '################## Creating topics used by orchestration flow ##################'
+
+      echo -e 'Creating inventory-update-request topic'
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic inventory-update-request --replication-factor 1 --partitions 4
+
+      echo -e 'Creating inventory-update-status topic'
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic inventory-update-status --replication-factor 1 --partitions 4
+      
+      echo -e 'Creating payment-requested topic'
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic payment-requested --replication-factor 1 --partitions 4
+      
+      echo -e 'Creating payment-status topic'
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic payment-status --replication-factor 1 --partitions 4
       
       echo -e 'Successfully created the following topics:'
       kafka-topics --bootstrap-server kafka:29092 --list

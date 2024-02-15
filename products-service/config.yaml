@@ -20,6 +20,6 @@ kafka:
   url: localhost:9092
   flushFrequencyMs: 500
   topics:
-    orderRequestsTopic: 'order-request'
-    itemsReservedTopic: 'order-items-reserved'
-    orderFailedTopic: 'order-failed'
+    orderPlaced: 'order-placed'
+    itemsReserved: 'items-reserved'
+    txnError: 'txn-error'

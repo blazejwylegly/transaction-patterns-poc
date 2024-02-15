@@ -41,27 +41,27 @@ func main() {
 	// TOPIC LISTENERS
 	orderRequestListener := listener.NewTopicListener(*kafkaClient,
 		*txHandler,
-		appConfig.GetKafkaConfig().KafkaTopics.OrderRequestsTopic)
+		appConfig.GetKafkaConfig().KafkaTopics.OrderPlaced)
 	orderRequestListener.StartConsuming()
 
 	itemsReservedListener := listener.NewTopicListener(*kafkaClient,
 		*txHandler,
-		appConfig.GetKafkaConfig().KafkaTopics.ItemsReservedTopic)
+		appConfig.GetKafkaConfig().KafkaTopics.ItemsReserved)
 	itemsReservedListener.StartConsuming()
 
 	paymentCompletedListener := listener.NewTopicListener(*kafkaClient,
 		*txHandler,
-		appConfig.GetKafkaConfig().KafkaTopics.PaymentCompletedTopic)
+		appConfig.GetKafkaConfig().KafkaTopics.PaymentProcessed)
 	paymentCompletedListener.StartConsuming()
 
 	orderResultsListener := listener.NewTopicListener(*kafkaClient,
 		*txHandler,
-		appConfig.GetKafkaConfig().KafkaTopics.OrderResultsTopic)
+		appConfig.GetKafkaConfig().KafkaTopics.TxnError)
 	orderResultsListener.StartConsuming()
 
 	orderFailedListener := listener.NewTopicListener(*kafkaClient,
 		*txHandler,
-		appConfig.GetKafkaConfig().KafkaTopics.OrderFailedTopic)
+		appConfig.GetKafkaConfig().KafkaTopics.OrderStatus)
 	orderFailedListener.StartConsuming()
 
 	// WEB

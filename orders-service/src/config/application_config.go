@@ -37,10 +37,20 @@ type Config struct {
 		Url              string `yaml:"url" envconfig:"KAFKA_URL"`
 		FlushFrequencyMs int32  `yaml:"flushFrequencyMs" envconfig:"KAFKA_FLUSH_FREQUENCY_MS"`
 		Topics           struct {
-			OrderRequestsTopic string `yaml:"orderRequestsTopic" envconfig:"KAFKA_ORDERS_TOPIC"`
-			ItemsReservedTopic string `yaml:"itemsReservedTopic" envconfig:"KAFKA_ITEMS_RESERVED_TOPIC"`
-			OrderResultsTopic  string `yaml:"orderResultsTopic" envconfig:"KAFKA_ORDER_RESULTS_TOPIC"`
-			OrderFailedTopic   string `yaml:"orderFailedTopic" envconfig:"KAFKA_ORDER_FAILED_TOPIC"`
+			Choreography struct {
+				OrderPlaced      string `yaml:"orderPlaced"  envconfig:"KAFKA_ORDER_PLACED_TOPIC"`
+				ItemsReserved    string `yaml:"itemsReserved" envconfig:"KAFKA_ITEMS_RESERVED_TOPIC"`
+				PaymentProcessed string `yaml:"paymentProcessed" envconfig:"KAFKA_PAYMENT_PROCESSED_TOPIC"`
+				OrderStatus      string `yaml:"orderStatus" envconfig:"KAFKA_ORDER_STATUS_TOPIC"`
+				TxnError         string `yaml:"txnError" envconfig:"KAFKA_TXN_ERROR_TOPIC"`
+			} `yaml:"choreography"`
+			Orchestration struct {
+				InventoryUpdateRequest string `yaml:"InventoryUpdateRequest"  envconfig:"KAFKA_INVENTORY_UPDATE_REQUEST_TOPIC"`
+				InventoryUpdateStatus  string `yaml:"inventoryUpdateStatus" envconfig:"KAFKA_INVENTORY_UPDATE_STATUS_TOPIC"`
+				PaymentRequest         string `yaml:"paymentRequest" envconfig:"KAFKA_PAYMENT_REQUESTED_TOPIC"`
+				PaymentStatus          string `yaml:"paymentStatus" envconfig:"KAFKA_PAYMENT_PROCESSED_TOPIC"`
+				OrderStatus            string `yaml:"orderStatus" envconfig:"KAFKA_ORDER_STATUS_TOPIC"`
+			} `yaml:"orchestration"`
 		} `yaml:"topics"`
 	} `yaml:"kafka"`
 }
@@ -48,14 +58,24 @@ type Config struct {
 type KafkaConfig struct {
 	KafkaUrl              string
 	KafkaFlushFrequencyMs int32
-	KafkaTopics           KafkaTopics
+	ChoreographyTopics    ChoreographyTopics
+	OrchestrationTopics   OrchestrationTopics
 }
 
-type KafkaTopics struct {
-	OrderRequestsTopic string
-	ItemsReservedTopic string
-	OrderResultsTopic  string
-	OrderFailedTopic   string
+type ChoreographyTopics struct {
+	OrderPlaced      string
+	ItemsReserved    string
+	PaymentProcessed string
+	OrderStatus      string
+	TxnError         string
+}
+
+type OrchestrationTopics struct {
+	ItemReservationRequest string
+	ItemReservationStatus  string
+	PaymentRequest         string
+	PaymentStatus          string
+	OrderStatus            string
 }
 
 type DatabaseConfig struct {
@@ -84,11 +104,20 @@ func (cfg *Config) GetKafkaConfig() KafkaConfig {
 	return KafkaConfig{
 		KafkaUrl:              cfg.Kafka.Url,
 		KafkaFlushFrequencyMs: cfg.Kafka.FlushFrequencyMs,
-		KafkaTopics: KafkaTopics{
-			OrderRequestsTopic: cfg.Kafka.Topics.OrderRequestsTopic,
-			ItemsReservedTopic: cfg.Kafka.Topics.ItemsReservedTopic,
-			OrderResultsTopic:  cfg.Kafka.Topics.OrderResultsTopic,
-			OrderFailedTopic:   cfg.Kafka.Topics.OrderFailedTopic},
+		ChoreographyTopics: ChoreographyTopics{
+			OrderPlaced:      cfg.Kafka.Topics.Choreography.OrderPlaced,
+			ItemsReserved:    cfg.Kafka.Topics.Choreography.ItemsReserved,
+			PaymentProcessed: cfg.Kafka.Topics.Choreography.PaymentProcessed,
+			OrderStatus:      cfg.Kafka.Topics.Choreography.OrderStatus,
+			TxnError:         cfg.Kafka.Topics.Choreography.TxnError,
+		},
+		OrchestrationTopics: OrchestrationTopics{
+			ItemReservationRequest: cfg.Kafka.Topics.Orchestration.InventoryUpdateRequest,
+			ItemReservationStatus:  cfg.Kafka.Topics.Orchestration.InventoryUpdateStatus,
+			PaymentRequest:         cfg.Kafka.Topics.Orchestration.PaymentRequest,
+			PaymentStatus:          cfg.Kafka.Topics.Orchestration.PaymentStatus,
+			OrderStatus:            cfg.Kafka.Topics.Orchestration.OrderStatus,
+		},
 	}
 }
 

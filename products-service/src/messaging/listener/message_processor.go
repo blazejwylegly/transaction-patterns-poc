@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/IBM/sarama"
-	"github.com/blazejwylegly/transactions-poc/products-service/src/events"
-	"github.com/blazejwylegly/transactions-poc/products-service/src/saga"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/application"
+	"github.com/blazejwylegly/transactions-poc/products-service/src/application/saga"
 )
 
 type OrderRequestProcessor struct {
@@ -39,7 +39,7 @@ func NewOrderFailedProcessor(coordinator saga.Coordinator) *OrderFailedProcessor
 
 func (processor *OrderFailedProcessor) process(messagesChannel chan *sarama.ConsumerMessage) {
 	for msg := range messagesChannel {
-		event := &events.OrderFailed{}
+		event := &application.OrderFailed{}
 		err := parseEvent(event, msg)
 		if err != nil {
 			fmt.Printf("Error parsing msg { partition:'%d', offset:'%d' }: %v\n", msg.Partition, msg.Offset, err)
@@ -56,7 +56,7 @@ func NewOrderRequestProcessor(coordinator saga.Coordinator) *OrderRequestProcess
 
 func (processor *OrderRequestProcessor) process(messagesChannel chan *sarama.ConsumerMessage) {
 	for msg := range messagesChannel {
-		event := &events.OrderPlaced{}
+		event := &application.OrderPlaced{}
 		err := parseEvent(event, msg)
 		if err != nil {
 			fmt.Printf("Error parsing msg { partition:'%d', offset:'%d' }: %v\n", msg.Partition, msg.Offset, err)

@@ -4,6 +4,7 @@ import (
 	"github.com/blazejwylegly/transactions-poc/orders-service/src/database"
 )
 
+// TODO
 type Logger struct {
 	repository database.SagaRepository
 }
@@ -19,6 +20,7 @@ func (logger *Logger) registerSagaStep() {
 func (logger *Logger) terminateSaga() {
 
 }
+
 func (logger *Logger) finalizeSaga() {
 
 }

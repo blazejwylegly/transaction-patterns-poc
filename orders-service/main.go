@@ -2,11 +2,11 @@ package main
 
 import (
 	"github.com/IBM/sarama"
+	"github.com/blazejwylegly/transactions-poc/orders-service/src/application/saga"
 	"github.com/blazejwylegly/transactions-poc/orders-service/src/config"
 	"github.com/blazejwylegly/transactions-poc/orders-service/src/database"
 	"github.com/blazejwylegly/transactions-poc/orders-service/src/messaging"
-	"github.com/blazejwylegly/transactions-poc/orders-service/src/messaging/listener"
-	"github.com/blazejwylegly/transactions-poc/orders-service/src/saga"
+	"github.com/blazejwylegly/transactions-poc/orders-service/src/messaging/handlers"
 	"github.com/blazejwylegly/transactions-poc/orders-service/src/web"
 	"github.com/gorilla/mux"
 	"log"
@@ -65,7 +65,7 @@ func initOrchestrationBasedApp(appConfig config.Config) {
 		}
 	}()
 
-	orderProducer := messaging.NewSaramaProducer(saramaProducer)
+	eventProducer := messaging.NewSaramaProducer(saramaProducer)
 
 	// KAFKA CONSUMER
 	kafkaConsumer, _ := kafkaClient.NewConsumer()
@@ -82,18 +82,20 @@ func initOrchestrationBasedApp(appConfig config.Config) {
 
 	// SERVICE
 	sagaLogger := saga.NewLogger(sagaRepository)
-	orchestrator := saga.NewOrchestrationCoordinator(*sagaLogger, orderProducer, appConfig.GetKafkaConfig())
+	orchestrator := saga.NewOrchestrationCoordinator(*sagaLogger, eventProducer, appConfig.GetKafkaConfig())
 
 	// TOPIC LISTENERS
-	orderRequestListener := listener.NewTopicListener(*kafkaClient,
-		orchestrator,
-		appConfig.GetKafkaConfig().KafkaTopics.ItemsReservedTopic)
-	orderRequestListener.StartConsuming()
+	itemsReservedHandler := handlers.NewItemReservationStatusHandler(*orchestrator)
+	itemReservedListener := messaging.NewTopicListener(*kafkaClient,
+		itemsReservedHandler.Handle(),
+		appConfig.GetKafkaConfig().OrchestrationTopics.ItemReservationStatus)
+	itemReservedListener.StartConsuming()
 
-	orderResultListener := listener.NewTopicListener(*kafkaClient,
-		orchestrator
-		appConfig.GetKafkaConfig().KafkaTopics.OrderResultsTopic)
-	orderResultListener.StartConsuming()
+	paymentProcessedHandler := handlers.NewPaymentStatusHandler(*orchestrator)
+	paymentProcessedListener := messaging.NewTopicListener(*kafkaClient,
+		paymentProcessedHandler.Handle(),
+		appConfig.GetKafkaConfig().OrchestrationTopics.PaymentStatus)
+	paymentProcessedListener.StartConsuming()
 
 	// WEB
 	baseRouter := mux.NewRouter()

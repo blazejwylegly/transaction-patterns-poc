@@ -4,10 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/IBM/sarama"
-	"github.com/blazejwylegly/transactions-poc/payments-service/src/config"
+	"github.com/blazejwylegly/transactions-poc/payments-service/src/application/saga"
 	"github.com/blazejwylegly/transactions-poc/payments-service/src/events"
 	"github.com/blazejwylegly/transactions-poc/payments-service/src/messaging"
-	"github.com/blazejwylegly/transactions-poc/payments-service/src/saga"
 	"log"
 	"sync"
 )
@@ -15,21 +14,21 @@ import (
 type PaymentRequestListener struct {
 	kafkaClient messaging.KafkaClient
 	coordinator saga.Coordinator
-	kafkaTopics config.KafkaTopics
+	kafkaTopic  string
 }
 
-func NewListener(client messaging.KafkaClient, config config.KafkaConfig, coordinator saga.Coordinator) *PaymentRequestListener {
+func NewListener(client messaging.KafkaClient, kafkaTopic string, coordinator saga.Coordinator) *PaymentRequestListener {
 	return &PaymentRequestListener{
 		client,
 		coordinator,
-		config.KafkaTopics,
+		kafkaTopic,
 	}
 }
 
 // StartConsuming fetches all available partitions from kafka broker, and runs a separate
 // goroutine to process the messages from each partition.
 func (listener *PaymentRequestListener) StartConsuming() {
-	partitions, _ := listener.kafkaClient.GetPartitions(listener.kafkaTopics.ItemsReservedTopic)
+	partitions, _ := listener.kafkaClient.GetPartitions(listener.kafkaTopic)
 	var wg sync.WaitGroup
 	for partition := range partitions {
 		go listener.consumePartition(&wg, partition)
@@ -42,7 +41,7 @@ func (listener *PaymentRequestListener) consumePartition(wg *sync.WaitGroup, par
 	messagesChannel := make(chan *sarama.ConsumerMessage)
 	defer close(messagesChannel)
 
-	partitionConsumer, err := listener.kafkaClient.ConsumePartition(listener.kafkaTopics.ItemsReservedTopic, partition)
+	partitionConsumer, err := listener.kafkaClient.ConsumePartition(listener.kafkaTopic, partition)
 	if err != nil {
 		log.Printf("Error creating consumer for partition %d: %v", partition, err)
 	}

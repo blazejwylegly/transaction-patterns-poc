@@ -16,9 +16,21 @@ database:
   password: postgres
   name: poc
 
-# Database credentials
+# Kafka
 kafka:
   url: localhost:9092
   flushFrequencyMs: 500
   topics:
-    orderRequestsTopic: 'order-request'
+    choreography:
+      orderPlaced: 'order-placed'
+      itemsReserved: 'items-reserved'
+      paymentProcessed: 'payment-processed'
+      orderStatus: 'order-status'
+      txnError: 'txn-error'
+
+    orchestration:
+      inventoryUpdateRequest: 'inventory-update-request'
+      inventoryUpdateStatus: 'inventory-update-status'
+      paymentRequest: 'payment-request'
+      paymentStatus: 'payment-status'
+      orderStatus: 'order-status'
