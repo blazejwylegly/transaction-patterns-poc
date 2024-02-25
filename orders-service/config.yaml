@@ -31,6 +31,6 @@ kafka:
     orchestration:
       inventoryUpdateRequest: 'inventory-update-request'
       inventoryUpdateStatus: 'inventory-update-status'
-      paymentRequest: 'payment-request'
+      paymentRequest: 'payment-requested'
       paymentStatus: 'payment-status'
       orderStatus: 'order-status'

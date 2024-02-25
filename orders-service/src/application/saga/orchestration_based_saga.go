@@ -42,7 +42,7 @@ func (orchestrator *OrchestrationCoordinator) requestProductReservation(order ap
 		messaging.StepExecutorHeader:         "ORDER_SERVICE",
 		messaging.StepStatusHeader:           "PENDING",
 	}
-	orchestrator.producer.Send(order, messageHeaders, orchestrator.topics.ItemReservationRequest)
+	orchestrator.producer.Send(order, messageHeaders, orchestrator.topics.InventoryUpdateRequest)
 	log.Printf("Requested reservation for order %s\n", order.OrderID.String())
 }
 
@@ -125,7 +125,7 @@ func (orchestrator *OrchestrationCoordinator) requestProductReservationRollback(
 	paymentFailedEvent := application.PaymentFailed{
 		OrderID: orderId,
 	}
-	orchestrator.producer.Send(paymentFailedEvent, messageHeaders, orchestrator.topics.ItemReservationStatus)
+	orchestrator.producer.Send(paymentFailedEvent, messageHeaders, orchestrator.topics.InventoryUpdateStatus)
 }
 
 func (orchestrator *OrchestrationCoordinator) terminateOrder(context Context, failedEvent interface{}) {

@@ -45,7 +45,7 @@ type Config struct {
 				TxnError         string `yaml:"txnError" envconfig:"KAFKA_TXN_ERROR_TOPIC"`
 			} `yaml:"choreography"`
 			Orchestration struct {
-				InventoryUpdateRequest string `yaml:"InventoryUpdateRequest"  envconfig:"KAFKA_INVENTORY_UPDATE_REQUEST_TOPIC"`
+				InventoryUpdateRequest string `yaml:"inventoryUpdateRequest"  envconfig:"KAFKA_INVENTORY_UPDATE_REQUEST_TOPIC"`
 				InventoryUpdateStatus  string `yaml:"inventoryUpdateStatus" envconfig:"KAFKA_INVENTORY_UPDATE_STATUS_TOPIC"`
 				PaymentRequest         string `yaml:"paymentRequest" envconfig:"KAFKA_PAYMENT_REQUESTED_TOPIC"`
 				PaymentStatus          string `yaml:"paymentStatus" envconfig:"KAFKA_PAYMENT_PROCESSED_TOPIC"`
@@ -71,8 +71,8 @@ type ChoreographyTopics struct {
 }
 
 type OrchestrationTopics struct {
-	ItemReservationRequest string
-	ItemReservationStatus  string
+	InventoryUpdateRequest string
+	InventoryUpdateStatus  string
 	PaymentRequest         string
 	PaymentStatus          string
 	OrderStatus            string
@@ -112,8 +112,8 @@ func (cfg *Config) GetKafkaConfig() KafkaConfig {
 			TxnError:         cfg.Kafka.Topics.Choreography.TxnError,
 		},
 		OrchestrationTopics: OrchestrationTopics{
-			ItemReservationRequest: cfg.Kafka.Topics.Orchestration.InventoryUpdateRequest,
-			ItemReservationStatus:  cfg.Kafka.Topics.Orchestration.InventoryUpdateStatus,
+			InventoryUpdateRequest: cfg.Kafka.Topics.Orchestration.InventoryUpdateRequest,
+			InventoryUpdateStatus:  cfg.Kafka.Topics.Orchestration.InventoryUpdateStatus,
 			PaymentRequest:         cfg.Kafka.Topics.Orchestration.PaymentRequest,
 			PaymentStatus:          cfg.Kafka.Topics.Orchestration.PaymentStatus,
 			OrderStatus:            cfg.Kafka.Topics.Orchestration.OrderStatus,

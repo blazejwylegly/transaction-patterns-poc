@@ -85,10 +85,11 @@ func initOrchestrationBasedApp(appConfig config.Config) {
 	orchestrator := saga.NewOrchestrationCoordinator(*sagaLogger, eventProducer, appConfig.GetKafkaConfig())
 
 	// TOPIC LISTENERS
+
 	itemsReservedHandler := handlers.NewItemReservationStatusHandler(*orchestrator)
 	itemReservedListener := messaging.NewTopicListener(*kafkaClient,
 		itemsReservedHandler.Handle(),
-		appConfig.GetKafkaConfig().OrchestrationTopics.ItemReservationStatus)
+		appConfig.GetKafkaConfig().OrchestrationTopics.InventoryUpdateStatus)
 	itemReservedListener.StartConsuming()
 
 	paymentProcessedHandler := handlers.NewPaymentStatusHandler(*orchestrator)
