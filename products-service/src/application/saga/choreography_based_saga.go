@@ -4,28 +4,33 @@ import (
 	"github.com/blazejwylegly/transactions-poc/products-service/src/application"
 	"github.com/blazejwylegly/transactions-poc/products-service/src/config"
 	"github.com/blazejwylegly/transactions-poc/products-service/src/messaging"
-	"github.com/blazejwylegly/transactions-poc/products-service/src/messaging/producer"
 	"github.com/google/uuid"
 	"log"
 )
 
-type Coordinator struct {
+type Coordinator interface {
+	HandleSagaEvent(application.OrderPlaced, map[string]string)
+	HandleSagaRollbackEvent(application.OrderFailed, map[string]string)
+}
+
+type ChoreographyCoordinator struct {
 	orderEventHandler application.OrderEventHandler
-	producer          producer.EventProducer
+	producer          messaging.EventProducer
 	topics            config.KafkaTopics
 }
 
-func NewCoordinator(orderEventHandler application.OrderEventHandler,
-	producer producer.EventProducer,
-	config config.KafkaConfig) *Coordinator {
-	return &Coordinator{
+func NewChoreographyCoordinator(orderEventHandler application.OrderEventHandler,
+	producer messaging.EventProducer,
+	config config.KafkaConfig) *ChoreographyCoordinator {
+	return &ChoreographyCoordinator{
 		orderEventHandler: orderEventHandler,
 		producer:          producer,
 		topics:            config.KafkaTopics,
 	}
 }
 
-func (coordinator *Coordinator) HandleTransaction(inputEvent application.OrderPlaced, inputHeaders map[string]string) {
+func (coordinator *ChoreographyCoordinator) HandleSagaEvent(inputEvent application.OrderPlaced,
+	inputHeaders map[string]string) {
 	orderItemsReserved, err := coordinator.orderEventHandler.Handle(inputEvent)
 	outputHeaders := map[string]string{
 		messaging.StepIdHeader:               uuid.New().String(),
@@ -38,12 +43,12 @@ func (coordinator *Coordinator) HandleTransaction(inputEvent application.OrderPl
 
 	if err != nil {
 		log.Printf("Txn with id %s failed - initiating rollback", inputHeaders[messaging.TransactionIdHeader])
-		orderReservationFailed := &application.OrderReservationFailed{
+		orderReservationFailed := &application.ItemReservationStatus{
 			OrderID: inputEvent.OrderID,
 			Details: err.Error(),
 		}
 		outputHeaders[messaging.StepResultHeader] = "FAILED"
-		coordinator.producer.Send(orderReservationFailed, outputHeaders, coordinator.topics.OrderFailedTopic)
+		coordinator.producer.Send(orderReservationFailed, outputHeaders, coordinator.topics.TxnError)
 		return
 	}
 
@@ -51,7 +56,8 @@ func (coordinator *Coordinator) HandleTransaction(inputEvent application.OrderPl
 	coordinator.producer.Send(orderItemsReserved, outputHeaders, coordinator.topics.ItemsReservedTopic)
 }
 
-func (coordinator *Coordinator) HandleRollback(event application.OrderFailed, headers map[string]string) {
+func (coordinator *ChoreographyCoordinator) HandleSagaRollbackEvent(event application.OrderFailed,
+	headers map[string]string) {
 	if headers[messaging.StepExecutorHeader] != "PRODUCTS_SERVICE" {
 		err := coordinator.orderEventHandler.HandleRollback(event)
 		if err != nil {

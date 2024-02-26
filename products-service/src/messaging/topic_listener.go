@@ -1,24 +1,19 @@
-package listener
+package messaging
 
 import (
 	"fmt"
 	"github.com/IBM/sarama"
-	"github.com/blazejwylegly/transactions-poc/products-service/src/messaging"
 	"log"
 	"sync"
 )
 
-type MessageProcessor interface {
-	process(messagesChannel chan *sarama.ConsumerMessage)
-}
-
 type TopicListener struct {
-	kafkaClient messaging.KafkaClient
-	processor   MessageProcessor
+	kafkaClient KafkaClient
+	processor   func(chan *sarama.ConsumerMessage)
 	topic       string
 }
 
-func NewListener(client messaging.KafkaClient, processor MessageProcessor, topic string) *TopicListener {
+func NewListener(client KafkaClient, processor func(chan *sarama.ConsumerMessage), topic string) *TopicListener {
 	return &TopicListener{
 		client,
 		processor,
@@ -62,6 +57,6 @@ func (listener *TopicListener) consumePartition(wg *sync.WaitGroup, partition in
 		}
 	}(partitionConsumer)
 
-	go listener.processor.process(messagesChannel)
+	go listener.processor(messagesChannel)
 	select {}
 }

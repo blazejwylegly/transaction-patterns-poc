@@ -4,19 +4,18 @@ import (
 	"github.com/blazejwylegly/transactions-poc/products-service/src/application"
 	"github.com/blazejwylegly/transactions-poc/products-service/src/config"
 	"github.com/blazejwylegly/transactions-poc/products-service/src/messaging"
-	"github.com/blazejwylegly/transactions-poc/products-service/src/messaging/producer"
 	"github.com/google/uuid"
 	"log"
 )
 
 type OrchestrationCoordinator struct {
 	orderEventHandler application.OrderEventHandler
-	producer          producer.EventProducer
+	producer          messaging.EventProducer
 	topics            config.KafkaTopics
 }
 
 func NewOrchestrationCoordinator(orderEventHandler application.OrderEventHandler,
-	producer producer.EventProducer,
+	producer messaging.EventProducer,
 	config config.KafkaConfig) *OrchestrationCoordinator {
 	return &OrchestrationCoordinator{
 		orderEventHandler: orderEventHandler,
@@ -25,11 +24,12 @@ func NewOrchestrationCoordinator(orderEventHandler application.OrderEventHandler
 	}
 }
 
-func (coordinator *OrchestrationCoordinator) HandleTransaction(inputEvent application.OrderPlaced, inputHeaders map[string]string) {
-	orderItemsReserved, err := coordinator.orderEventHandler.Handle(inputEvent)
+func (coordinator *OrchestrationCoordinator) HandleSagaEvent(inputEvent application.OrderPlaced,
+	inputHeaders map[string]string) {
+	itemsReserved, err := coordinator.orderEventHandler.Handle(inputEvent)
 	outputHeaders := map[string]string{
 		messaging.StepIdHeader:               uuid.New().String(),
-		messaging.StepNameHeader:             "ORDER_ITEMS_RESERVED",
+		messaging.StepNameHeader:             "INVENTORY_UPDATE_REQUESTED",
 		messaging.StepExecutorHeader:         "PRODUCTS_SERVICE",
 		messaging.TransactionIdHeader:        inputHeaders[messaging.TransactionIdHeader],
 		messaging.TransactionNameHeader:      inputHeaders[messaging.TransactionNameHeader],
@@ -37,21 +37,29 @@ func (coordinator *OrchestrationCoordinator) HandleTransaction(inputEvent applic
 	}
 
 	if err != nil {
-		log.Printf("Txn with id %s failed - initiating rollback", inputHeaders[messaging.TransactionIdHeader])
-		orderReservationFailed := &application.OrderReservationFailed{
+		log.Printf("Items reservation for order %s failed", inputEvent.OrderID)
+		itemsReservationFailed := &application.ItemReservationStatus{
 			OrderID: inputEvent.OrderID,
 			Details: err.Error(),
+			Status:  "FAILED",
 		}
 		outputHeaders[messaging.StepResultHeader] = "FAILED"
-		coordinator.producer.Send(orderReservationFailed, outputHeaders, coordinator.topics.OrderFailedTopic)
-		return
+		coordinator.producer.Send(itemsReservationFailed, outputHeaders, coordinator.topics.InventoryUpdateStatus)
+	} else {
+		itemReservationSuccessful := &application.ItemReservationStatus{
+			OrderID:    itemsReserved.OrderID,
+			CustomerID: itemsReserved.CustomerID,
+			TotalCost:  itemsReserved.TotalCost,
+			Status:     "SUCCESS",
+		}
+		log.Printf("Items reservation for order %s successful", inputEvent.OrderID)
+		outputHeaders[messaging.StepResultHeader] = "SUCCESS"
+		coordinator.producer.Send(itemReservationSuccessful, outputHeaders, coordinator.topics.InventoryUpdateStatus)
 	}
-
-	outputHeaders[messaging.StepResultHeader] = "SUCCESS"
-	coordinator.producer.Send(orderItemsReserved, outputHeaders, coordinator.topics.ItemsReservedTopic)
 }
 
-func (coordinator *Coordinator) HandleRollback(event application.OrderFailed, headers map[string]string) {
+func (coordinator *OrchestrationCoordinator) HandleSagaRollbackEvent(event application.OrderFailed,
+	headers map[string]string) {
 	if headers[messaging.StepExecutorHeader] != "PRODUCTS_SERVICE" {
 		err := coordinator.orderEventHandler.HandleRollback(event)
 		if err != nil {

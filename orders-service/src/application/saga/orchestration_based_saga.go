@@ -6,6 +6,7 @@ import (
 	"github.com/blazejwylegly/transactions-poc/orders-service/src/messaging"
 	"github.com/google/uuid"
 	"log"
+	"strings"
 	"time"
 )
 
@@ -51,7 +52,7 @@ func (orchestrator *OrchestrationCoordinator) HandleItemReservationStatusEvent(
 	context Context) {
 	log.Printf("Handling ItemsReserved for order %s\n", itemReservationStatus.OrderID.String())
 
-	if itemReservationStatus.Status == "success" {
+	if strings.EqualFold(itemReservationStatus.Status, "SUCCESS") {
 		paymentRequest := application.PaymentRequest{
 			OrderID:    itemReservationStatus.OrderID,
 			CustomerID: itemReservationStatus.CustomerID,

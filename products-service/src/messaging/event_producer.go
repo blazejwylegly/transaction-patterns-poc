@@ -1,10 +1,9 @@
-package producer
+package messaging
 
 import (
 	"encoding/json"
 	"fmt"
 	"github.com/IBM/sarama"
-	"github.com/blazejwylegly/transactions-poc/products-service/src/messaging"
 	"log"
 	"time"
 )
@@ -30,14 +29,14 @@ func (producer *SaramaEventProducer) Send(data interface{}, headers map[string]s
 
 	partition, offset, err := producer.kafkaProducer.SendMessage(encodedMessage)
 	if err != nil {
-		log.Printf("Error producing message for txn id %s - %v}", headers[messaging.TransactionIdHeader], err)
+		log.Printf("Error producing message for txn id %s - %v}", headers[TransactionIdHeader], err)
 		return
 	}
 	log.Printf(
 		"Produced message {offset: '%d', partition: '%d', txnId: '%s'}",
 		offset,
 		partition,
-		headers[messaging.TransactionIdHeader],
+		headers[TransactionIdHeader],
 	)
 }
 

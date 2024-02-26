@@ -23,9 +23,12 @@ type OrderItem struct {
 	QuantityOrdered int       `json:"quantity_ordered"`
 }
 
-type OrderReservationFailed struct {
-	OrderID uuid.UUID `json:"order_id"`
-	Details string    `json:"details"`
+type ItemReservationStatus struct {
+	OrderID    uuid.UUID `json:"order_id"`
+	CustomerID uuid.UUID `json:"customer_id"`
+	TotalCost  float64   `json:"total_cost"`
+	Status     string    `json:"status"`
+	Details    string    `json:"details"`
 }
 
 type OrderFailed struct {

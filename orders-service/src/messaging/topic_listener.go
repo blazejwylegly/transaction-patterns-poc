@@ -7,10 +7,6 @@ import (
 	"sync"
 )
 
-type MessageProcessor interface {
-	process(messagesChannel chan *sarama.ConsumerMessage)
-}
-
 type TopicListener struct {
 	kafkaClient      KafkaClient
 	messageProcessor func(chan *sarama.ConsumerMessage)

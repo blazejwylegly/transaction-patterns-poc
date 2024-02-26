@@ -18,7 +18,7 @@ const (
 type Config struct {
 	Application struct {
 		Mode ApplicationMode `yaml:"mode" envconfig:"APPLICATION_MODE"`
-	}
+	} `yaml:"application"`
 
 	Server struct {
 		Host string `yaml:"host" envconfig:"SERVER_HOST"`
@@ -37,9 +37,11 @@ type Config struct {
 		Url              string `yaml:"url" envconfig:"KAFKA_URL"`
 		FlushFrequencyMs int32  `yaml:"flushFrequencyMs" envconfig:"KAFKA_FLUSH_FREQUENCY_MS"`
 		Topics           struct {
-			OrderRequestsTopic string `yaml:"orderRequestsTopic" envconfig:"KAFKA_ORDERS_TOPIC"`
-			ItemsReservedTopic string `yaml:"itemsReservedTopic" envconfig:"KAFKA_ITEMS_RESERVED_TOPIC"`
-			OrderFailedTopic   string `yaml:"orderFailedTopic" envconfig:"KAFKA_ORDER_FAILED_TOPIC"`
+			InventoryUpdateRequest string `yaml:"inventoryUpdateRequest"  envconfig:"KAFKA_INVENTORY_UPDATE_REQUEST_TOPIC"`
+			InventoryUpdateStatus  string `yaml:"inventoryUpdateStatus" envconfig:"KAFKA_INVENTORY_UPDATE_STATUS_TOPIC"`
+			ItemsReservedTopic     string `yaml:"itemsReservedTopic" envconfig:"KAFKA_ITEMS_RESERVED_TOPIC"`
+			OrderPlaced            string `yaml:"orderPlaced"  envconfig:"KAFKA_ORDER_PLACED_TOPIC"`
+			TxnError               string `yaml:"txnError" envconfig:"KAFKA_TXN_ERROR_TOPIC"`
 		} `yaml:"topics"`
 	} `yaml:"kafka"`
 }
@@ -51,9 +53,11 @@ type KafkaConfig struct {
 }
 
 type KafkaTopics struct {
-	OrderRequestsTopic string
-	ItemsReservedTopic string
-	OrderFailedTopic   string
+	InventoryUpdateRequest string
+	InventoryUpdateStatus  string
+	ItemsReservedTopic     string
+	OrderPlaced            string
+	TxnError               string
 }
 
 type DatabaseConfig struct {
@@ -83,9 +87,11 @@ func (cfg *Config) GetKafkaConfig() KafkaConfig {
 		KafkaUrl:              cfg.Kafka.Url,
 		KafkaFlushFrequencyMs: cfg.Kafka.FlushFrequencyMs,
 		KafkaTopics: KafkaTopics{
-			OrderRequestsTopic: cfg.Kafka.Topics.OrderRequestsTopic,
-			ItemsReservedTopic: cfg.Kafka.Topics.ItemsReservedTopic,
-			OrderFailedTopic:   cfg.Kafka.Topics.OrderFailedTopic,
+			InventoryUpdateRequest: cfg.Kafka.Topics.InventoryUpdateRequest,
+			InventoryUpdateStatus:  cfg.Kafka.Topics.InventoryUpdateStatus,
+			OrderPlaced:            cfg.Kafka.Topics.OrderPlaced,
+			ItemsReservedTopic:     cfg.Kafka.Topics.ItemsReservedTopic,
+			TxnError:               cfg.Kafka.Topics.TxnError,
 		},
 	}
 }

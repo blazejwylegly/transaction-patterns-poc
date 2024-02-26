@@ -1,4 +1,4 @@
-package listener
+package handlers
 
 import (
 	"encoding/json"
@@ -8,11 +8,7 @@ import (
 	"github.com/blazejwylegly/transactions-poc/products-service/src/application/saga"
 )
 
-type OrderRequestProcessor struct {
-	coordinator saga.Coordinator
-}
-
-type OrderFailedProcessor struct {
+type ItemReservationRequestHandler struct {
 	coordinator saga.Coordinator
 }
 
@@ -33,28 +29,11 @@ func parseEvent[T interface{}](event *T, msg *sarama.ConsumerMessage) error {
 	return nil
 }
 
-func NewOrderFailedProcessor(coordinator saga.Coordinator) *OrderFailedProcessor {
-	return &OrderFailedProcessor{coordinator: coordinator}
+func NewItemReservationRequestHandler(coordinator saga.Coordinator) *ItemReservationRequestHandler {
+	return &ItemReservationRequestHandler{coordinator: coordinator}
 }
 
-func (processor *OrderFailedProcessor) process(messagesChannel chan *sarama.ConsumerMessage) {
-	for msg := range messagesChannel {
-		event := &application.OrderFailed{}
-		err := parseEvent(event, msg)
-		if err != nil {
-			fmt.Printf("Error parsing msg { partition:'%d', offset:'%d' }: %v\n", msg.Partition, msg.Offset, err)
-		}
-
-		headers := parseHeaders(msg.Headers)
-		processor.coordinator.HandleRollback(*event, headers)
-	}
-}
-
-func NewOrderRequestProcessor(coordinator saga.Coordinator) *OrderRequestProcessor {
-	return &OrderRequestProcessor{coordinator: coordinator}
-}
-
-func (processor *OrderRequestProcessor) process(messagesChannel chan *sarama.ConsumerMessage) {
+func (handler *ItemReservationRequestHandler) Handle(messagesChannel chan *sarama.ConsumerMessage) {
 	for msg := range messagesChannel {
 		event := &application.OrderPlaced{}
 		err := parseEvent(event, msg)
@@ -63,6 +42,6 @@ func (processor *OrderRequestProcessor) process(messagesChannel chan *sarama.Con
 		}
 
 		headers := parseHeaders(msg.Headers)
-		processor.coordinator.HandleTransaction(*event, headers)
+		handler.coordinator.HandleSagaEvent(*event, headers)
 	}
 }

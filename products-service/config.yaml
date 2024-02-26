@@ -1,6 +1,7 @@
 # 0 - choreography
 # 1 - orchestration
-mode: 0
+application:
+  mode: 1
 
 # Server configurations
 server:
@@ -23,3 +24,5 @@ kafka:
     orderPlaced: 'order-placed'
     itemsReserved: 'items-reserved'
     txnError: 'txn-error'
+    inventoryUpdateRequest: 'inventory-update-request'
+    inventoryUpdateStatus: 'inventory-update-status'

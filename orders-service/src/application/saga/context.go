@@ -26,11 +26,13 @@ func (ctx *Context) ToHeaders() map[string]string {
 }
 
 func ContextFromHeaders(headers map[string]string) (*Context, error) {
-	transactionId, err := uuid.FromBytes([]byte(headers[messaging.TransactionIdHeader]))
+	txnIdHeader := headers[messaging.TransactionIdHeader]
+	transactionId, err := uuid.Parse(txnIdHeader)
 	if err != nil {
 		return nil, err
 	}
-	stepId, err := uuid.FromBytes([]byte(headers[messaging.StepIdHeader]))
+	stepIdHeader := headers[messaging.StepIdHeader]
+	stepId, err := uuid.Parse(stepIdHeader)
 	if err != nil {
 		return nil, err
 	}

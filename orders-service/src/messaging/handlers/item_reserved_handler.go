@@ -24,11 +24,15 @@ func (handler *ItemReservationStatusHandler) Handle() func(chan *sarama.Consumer
 			itemReservationStatus, err := parseItemReservationStatus(msg)
 			if err != nil {
 				log.Printf("Error trying to parse event for message with offset %d", msg.Offset)
+				return
 			}
 			headers := messaging.ParseHeaders(msg.Headers)
 			context, err := saga.ContextFromHeaders(headers)
-			handler.sagaCoordinator.HandleItemReservationStatusEvent(*itemReservationStatus,
-				*context)
+			if err != nil {
+				log.Printf("Error trying to parse transaction context for message with offset %d", msg.Offset)
+				return
+			}
+			handler.sagaCoordinator.HandleItemReservationStatusEvent(*itemReservationStatus, *context)
 		}
 	}
 
