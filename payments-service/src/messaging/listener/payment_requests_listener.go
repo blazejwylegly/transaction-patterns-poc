@@ -17,7 +17,9 @@ type PaymentRequestListener struct {
 	kafkaTopic  string
 }
 
-func NewListener(client messaging.KafkaClient, kafkaTopic string, coordinator saga.Coordinator) *PaymentRequestListener {
+func NewListener(client messaging.KafkaClient,
+	kafkaTopic string,
+	coordinator saga.Coordinator) *PaymentRequestListener {
 	return &PaymentRequestListener{
 		client,
 		coordinator,
@@ -67,9 +69,9 @@ func (listener *PaymentRequestListener) consumePartition(wg *sync.WaitGroup, par
 
 func (listener *PaymentRequestListener) processKafkaMessages(messagesChannel chan *sarama.ConsumerMessage) {
 	for msg := range messagesChannel {
-		txMessage, err := parseEvent(msg)
+		paymentRequestedEvent, err := parseEvent(msg)
 		headers := parseHeaders(msg.Headers)
-		listener.coordinator.HandleTransaction(*txMessage, headers)
+		listener.coordinator.HandleSagaEvent(*paymentRequestedEvent, headers)
 		if err != nil {
 			fmt.Printf("Error parsing msg { partition:'%d', offset:'%d' }: %v\n", msg.Partition, msg.Offset, err)
 		}

@@ -37,9 +37,11 @@ type Config struct {
 		Url              string `yaml:"url" envconfig:"KAFKA_URL"`
 		FlushFrequencyMs int32  `yaml:"flushFrequencyMs" envconfig:"KAFKA_FLUSH_FREQUENCY_MS"`
 		Topics           struct {
-			ItemsReservedTopic    string `yaml:"itemsReservedTopic" envconfig:"KAFKA_ITEMS_RESERVED_TOPIC"`
-			PaymentCompletedTopic string `yaml:"paymentCompletedTopic" envconfig:"KAFKA_PAYMENT_COMPLETED_TOPIC"`
-			OrderFailedTopic      string `yaml:"orderFailedTopic" envconfig:"KAFKA_ORDER_FAILED_TOPIC"`
+			ItemsReserved    string `yaml:"itemsReserved" envconfig:"KAFKA_ITEMS_RESERVED_TOPIC"`
+			PaymentProcessed string `yaml:"paymentProcessed" envconfig:"KAFKA_PAYMENT_PROCESSED_TOPIC"`
+			TxnError         string `yaml:"txnError" envconfig:"KAFKA_TXN_ERROR_TOPIC"`
+			PaymentRequest   string `yaml:"paymentRequest" envconfig:"KAFKA_PAYMENT_REQUESTED_TOPIC"`
+			PaymentStatus    string `yaml:"paymentStatus" envconfig:"KAFKA_PAYMENT_PROCESSED_TOPIC"`
 		} `yaml:"topics"`
 	} `yaml:"kafka"`
 }
@@ -51,9 +53,11 @@ type KafkaConfig struct {
 }
 
 type KafkaTopics struct {
-	ItemsReservedTopic    string
-	PaymentCompletedTopic string
-	OrderFailedTopic      string
+	ItemsReserved    string
+	PaymentProcessed string
+	TxnError         string
+	PaymentRequest   string
+	PaymentStatus    string
 }
 
 type DatabaseConfig struct {
@@ -83,9 +87,11 @@ func (cfg *Config) GetKafkaConfig() KafkaConfig {
 		KafkaUrl:              cfg.Kafka.Url,
 		KafkaFlushFrequencyMs: cfg.Kafka.FlushFrequencyMs,
 		KafkaTopics: KafkaTopics{
-			ItemsReservedTopic:    cfg.Kafka.Topics.ItemsReservedTopic,
-			PaymentCompletedTopic: cfg.Kafka.Topics.PaymentCompletedTopic,
-			OrderFailedTopic:      cfg.Kafka.Topics.OrderFailedTopic,
+			ItemsReserved:    cfg.Kafka.Topics.ItemsReserved,
+			PaymentProcessed: cfg.Kafka.Topics.PaymentProcessed,
+			TxnError:         cfg.Kafka.Topics.TxnError,
+			PaymentRequest:   cfg.Kafka.Topics.PaymentRequest,
+			PaymentStatus:    cfg.Kafka.Topics.PaymentStatus,
 		},
 	}
 }

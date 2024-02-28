@@ -84,35 +84,35 @@ services:
       kafka-topics --bootstrap-server kafka:29092 --list
       "
 
-#  orders-service:
-#    depends_on:
-#      - kafka
-#    build:
-#      context: ./orders-service
-#      dockerfile: ./dockerfile
-#    environment:
-#      - APPLICATION_MODE=0
-#      - SERVER_HOST=0.0.0.0
-#      - SERVER_PORT=8080
-#      - KAFKA_URL=kafka:29092
-#    ports:
-#      - '8080:8080'
-#
-#  products-service:
-#    depends_on:
-#      - kafka
-#      - db
-#    build:
-#      context: ./products-service
-#      dockerfile: ./dockerfile
-#    environment:
-#      - APPLICATION_MODE=0
-#      - SERVER_HOST=0.0.0.0
-#      - SERVER_PORT=8081
-#      - DB_HOST=db
-#      - KAFKA_URL=kafka:29092
-#    ports:
-#      - '8081:8081'
+  orders-service:
+    depends_on:
+      - kafka
+    build:
+      context: ./orders-service
+      dockerfile: ./dockerfile
+    environment:
+      - APPLICATION_MODE=0
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8080
+      - KAFKA_URL=kafka:29092
+    ports:
+      - '8080:8080'
+
+  products-service:
+    depends_on:
+      - kafka
+      - db
+    build:
+      context: ./products-service
+      dockerfile: ./dockerfile
+    environment:
+      - APPLICATION_MODE=0
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8081
+      - DB_HOST=db
+      - KAFKA_URL=kafka:29092
+    ports:
+      - '8081:8081'
 #
 #  payments-service:
 #    depends_on:

@@ -27,7 +27,6 @@ kafka:
       paymentProcessed: 'payment-processed'
       orderStatus: 'order-status'
       txnError: 'txn-error'
-
     orchestration:
       inventoryUpdateRequest: 'inventory-update-request'
       inventoryUpdateStatus: 'inventory-update-status'

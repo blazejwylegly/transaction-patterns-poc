@@ -10,27 +10,23 @@ import (
 	"log"
 )
 
-type Coordinator interface {
-	  n HandleSagaEvent(events.PaymentRequested, map[string]string)
-}
-
-type ChoreographyCoordinator struct {
+type OrchestrationCoordinator struct {
 	eventHandler application.PaymentRequestedHandler
 	producer     producer.EventProducer
 	topics       config.KafkaTopics
 }
 
-func NewChoreographyCoordinator(itemsReservedHandler application.PaymentRequestedHandler,
+func NewOrchestrationCoordinator(paymentEventHandler application.PaymentRequestedHandler,
 	producer producer.EventProducer,
-	config config.KafkaConfig) *ChoreographyCoordinator {
-	return &ChoreographyCoordinator{
-		eventHandler: itemsReservedHandler,
+	config config.KafkaConfig) *OrchestrationCoordinator {
+	return &OrchestrationCoordinator{
+		eventHandler: paymentEventHandler,
 		producer:     producer,
 		topics:       config.KafkaTopics,
 	}
 }
 
-func (coordinator *ChoreographyCoordinator) HandleSagaEvent(inputEvent events.PaymentRequested,
+func (coordinator *OrchestrationCoordinator) HandleSagaEvent(inputEvent events.PaymentRequested,
 	headers map[string]string) {
 	paymentProcessed, err := coordinator.eventHandler.Handle(inputEvent)
 	messageHeaders := map[string]string{
@@ -49,10 +45,10 @@ func (coordinator *ChoreographyCoordinator) HandleSagaEvent(inputEvent events.Pa
 			Details:    err.Error(),
 		}
 		messageHeaders[messaging.StepResultHeader] = "FAILED"
-		coordinator.producer.Send(paymentFailed, messageHeaders, coordinator.topics.TxnError)
-		return
+		coordinator.producer.Send(paymentFailed, messageHeaders, coordinator.topics.PaymentStatus)
+	} else {
+		messageHeaders[messaging.StepResultHeader] = "SUCCESS"
+		coordinator.producer.Send(paymentProcessed, messageHeaders, coordinator.topics.PaymentStatus)
 	}
 
-	messageHeaders[messaging.StepResultHeader] = "SUCCESS"
-	coordinator.producer.Send(paymentProcessed, messageHeaders, coordinator.topics.PaymentProcessed)
 }

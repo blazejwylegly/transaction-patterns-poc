@@ -21,6 +21,15 @@ func main() {
 	// CONFIG
 	appConfig := config.New(configFileName)
 
+	if appConfig.ChoreographyModeEnabled() {
+		initChoreographyBasedApp(appConfig)
+	} else {
+		initOrchestrationBasedApp(appConfig)
+	}
+
+}
+
+func initChoreographyBasedApp(appConfig *config.Config) {
 	// WEB
 	router := mux.NewRouter()
 
@@ -54,12 +63,60 @@ func main() {
 	// SERVICE
 	eventProducer := producer.NewSaramaProducer(*kafkaProducer)
 	eventHandler := application.NewPaymentRequestedHandler(db)
-	sagaCoordinator := saga.NewCoordinator(*eventHandler, eventProducer, appConfig.GetKafkaConfig())
+	sagaCoordinator := saga.NewChoreographyCoordinator(*eventHandler, eventProducer, appConfig.GetKafkaConfig())
 
 	paymentRequestListener := listener.NewListener(*kafkaClient,
-		appConfig.GetKafkaConfig().KafkaTopics.ItemsReservedTopic,
+		appConfig.GetKafkaConfig().KafkaTopics.ItemsReserved,
 		*sagaCoordinator)
 	paymentRequestListener.StartConsuming()
+
+	err = http.ListenAndServe(appConfig.GetServerUrl(), router)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func initOrchestrationBasedApp(appConfig *config.Config) {
+
+	// DATABASE
+	db := database.InitDbConnection(appConfig.GetDatabaseConfig())
+
+	// KAFKA
+	kafkaClient := messaging.NewKafkaClient(appConfig.GetKafkaConfig())
+
+	// KAFKA PRODUCER
+	kafkaProducer, err := kafkaClient.NewProducer()
+	defer func(producer sarama.SyncProducer) {
+		err := producer.Close()
+		if err != nil {
+			log.Fatalf("Error closing sarama kafka producer: %v", err)
+		}
+	}(*kafkaProducer)
+
+	// KAFKA CONSUMER
+	kafkaConsumer, err := kafkaClient.NewConsumer()
+	defer func(consumer sarama.Consumer) {
+		err := consumer.Close()
+		if err != nil {
+			log.Fatalf("Error closing sarama kafka consumer: %v", err)
+		}
+	}(*kafkaConsumer)
+
+	// SERVICE
+	eventProducer := producer.NewSaramaProducer(*kafkaProducer)
+	eventHandler := application.NewPaymentRequestedHandler(db)
+	sagaCoordinator := saga.NewOrchestrationCoordinator(*eventHandler, eventProducer, appConfig.GetKafkaConfig())
+
+	paymentRequestListener := listener.NewListener(*kafkaClient,
+		appConfig.GetKafkaConfig().KafkaTopics.PaymentRequest,
+		*sagaCoordinator)
+	paymentRequestListener.StartConsuming()
+
+	// WEB
+	router := mux.NewRouter()
+
+	web.InitPaymentsApi(router)
+	web.InitDevApi(router, *appConfig)
 
 	err = http.ListenAndServe(appConfig.GetServerUrl(), router)
 	if err != nil {

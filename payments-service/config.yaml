@@ -22,4 +22,6 @@ kafka:
   topics:
     itemsReserved: 'items-reserved'
     paymentProcessed: 'payment-processed'
+    paymentRequest: 'payment-requested'
+    paymentStatus: 'payment-status'
     txnError: 'txn-error'
