@@ -39,8 +39,8 @@ type Config struct {
 		Topics           struct {
 			InventoryUpdateRequest string `yaml:"inventoryUpdateRequest"  envconfig:"KAFKA_INVENTORY_UPDATE_REQUEST_TOPIC"`
 			InventoryUpdateStatus  string `yaml:"inventoryUpdateStatus" envconfig:"KAFKA_INVENTORY_UPDATE_STATUS_TOPIC"`
-			ItemsReservedTopic     string `yaml:"itemsReservedTopic" envconfig:"KAFKA_ITEMS_RESERVED_TOPIC"`
 			OrderPlaced            string `yaml:"orderPlaced"  envconfig:"KAFKA_ORDER_PLACED_TOPIC"`
+			ItemsReserved          string `yaml:"itemsReserved" envconfig:"KAFKA_ITEMS_RESERVED_TOPIC"`
 			TxnError               string `yaml:"txnError" envconfig:"KAFKA_TXN_ERROR_TOPIC"`
 		} `yaml:"topics"`
 	} `yaml:"kafka"`
@@ -55,7 +55,7 @@ type KafkaConfig struct {
 type KafkaTopics struct {
 	InventoryUpdateRequest string
 	InventoryUpdateStatus  string
-	ItemsReservedTopic     string
+	ItemsReserved          string
 	OrderPlaced            string
 	TxnError               string
 }
@@ -90,7 +90,7 @@ func (cfg *Config) GetKafkaConfig() KafkaConfig {
 			InventoryUpdateRequest: cfg.Kafka.Topics.InventoryUpdateRequest,
 			InventoryUpdateStatus:  cfg.Kafka.Topics.InventoryUpdateStatus,
 			OrderPlaced:            cfg.Kafka.Topics.OrderPlaced,
-			ItemsReservedTopic:     cfg.Kafka.Topics.ItemsReservedTopic,
+			ItemsReserved:          cfg.Kafka.Topics.ItemsReserved,
 			TxnError:               cfg.Kafka.Topics.TxnError,
 		},
 	}

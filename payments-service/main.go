@@ -22,6 +22,7 @@ func main() {
 	appConfig := config.New(configFileName)
 
 	if appConfig.ChoreographyModeEnabled() {
+		log.Printf("Starting app in choreography mode")
 		initChoreographyBasedApp(appConfig)
 	} else {
 		initOrchestrationBasedApp(appConfig)
@@ -67,7 +68,7 @@ func initChoreographyBasedApp(appConfig *config.Config) {
 
 	paymentRequestListener := listener.NewListener(*kafkaClient,
 		appConfig.GetKafkaConfig().KafkaTopics.ItemsReserved,
-		*sagaCoordinator)
+		sagaCoordinator)
 	paymentRequestListener.StartConsuming()
 
 	err = http.ListenAndServe(appConfig.GetServerUrl(), router)
@@ -108,8 +109,8 @@ func initOrchestrationBasedApp(appConfig *config.Config) {
 	sagaCoordinator := saga.NewOrchestrationCoordinator(*eventHandler, eventProducer, appConfig.GetKafkaConfig())
 
 	paymentRequestListener := listener.NewListener(*kafkaClient,
-		appConfig.GetKafkaConfig().KafkaTopics.PaymentRequest,
-		*sagaCoordinator)
+		appConfig.GetKafkaConfig().KafkaTopics.PaymentRequested,
+		sagaCoordinator)
 	paymentRequestListener.StartConsuming()
 
 	// WEB

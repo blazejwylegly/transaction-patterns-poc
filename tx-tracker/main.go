@@ -64,6 +64,26 @@ func main() {
 		appConfig.GetKafkaConfig().KafkaTopics.OrderStatus)
 	orderFailedListener.StartConsuming()
 
+	inventoryUpdateRequestListener := listener.NewTopicListener(*kafkaClient,
+		*txHandler,
+		appConfig.GetKafkaConfig().KafkaTopics.InventoryUpdateRequest)
+	inventoryUpdateRequestListener.StartConsuming()
+
+	inventoryUpdateStatusListener := listener.NewTopicListener(*kafkaClient,
+		*txHandler,
+		appConfig.GetKafkaConfig().KafkaTopics.InventoryUpdateStatus)
+	inventoryUpdateStatusListener.StartConsuming()
+
+	paymentRequestListener := listener.NewTopicListener(*kafkaClient,
+		*txHandler,
+		appConfig.GetKafkaConfig().KafkaTopics.PaymentRequest)
+	paymentRequestListener.StartConsuming()
+
+	paymentStatusListener := listener.NewTopicListener(*kafkaClient,
+		*txHandler,
+		appConfig.GetKafkaConfig().KafkaTopics.PaymentStatus)
+	paymentStatusListener.StartConsuming()
+
 	// WEB
 	router := mux.NewRouter()
 	web.InitTxApi(router, txRepository)

@@ -40,7 +40,7 @@ type Config struct {
 			ItemsReserved    string `yaml:"itemsReserved" envconfig:"KAFKA_ITEMS_RESERVED_TOPIC"`
 			PaymentProcessed string `yaml:"paymentProcessed" envconfig:"KAFKA_PAYMENT_PROCESSED_TOPIC"`
 			TxnError         string `yaml:"txnError" envconfig:"KAFKA_TXN_ERROR_TOPIC"`
-			PaymentRequest   string `yaml:"paymentRequest" envconfig:"KAFKA_PAYMENT_REQUESTED_TOPIC"`
+			PaymentRequested string `yaml:"paymentRequested" envconfig:"KAFKA_PAYMENT_REQUESTED_TOPIC"`
 			PaymentStatus    string `yaml:"paymentStatus" envconfig:"KAFKA_PAYMENT_PROCESSED_TOPIC"`
 		} `yaml:"topics"`
 	} `yaml:"kafka"`
@@ -56,7 +56,7 @@ type KafkaTopics struct {
 	ItemsReserved    string
 	PaymentProcessed string
 	TxnError         string
-	PaymentRequest   string
+	PaymentRequested string
 	PaymentStatus    string
 }
 
@@ -90,7 +90,7 @@ func (cfg *Config) GetKafkaConfig() KafkaConfig {
 			ItemsReserved:    cfg.Kafka.Topics.ItemsReserved,
 			PaymentProcessed: cfg.Kafka.Topics.PaymentProcessed,
 			TxnError:         cfg.Kafka.Topics.TxnError,
-			PaymentRequest:   cfg.Kafka.Topics.PaymentRequest,
+			PaymentRequested: cfg.Kafka.Topics.PaymentRequested,
 			PaymentStatus:    cfg.Kafka.Topics.PaymentStatus,
 		},
 	}

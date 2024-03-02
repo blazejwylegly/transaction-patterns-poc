@@ -37,8 +37,9 @@ type PaymentRequest struct {
 	TotalCost  float64   `json:"total_cost"`
 }
 
-type PaymentFailed struct {
-	OrderID uuid.UUID `json:"order_id"`
+type ItemReservationRollbackRequest struct {
+	OrderID    uuid.UUID `json:"order_id"`
+	IsRollback bool      `json:"is_rollback"`
 }
 
 type PaymentStatus struct {

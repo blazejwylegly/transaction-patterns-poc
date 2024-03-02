@@ -19,6 +19,8 @@ func main() {
 	appConfig := config.New(configFileName)
 
 	if appConfig.ChoreographyModeEnabled() {
+		log.Printf("Starting app in choreography mode")
+
 		initChoreographyBasedApp(*appConfig)
 	} else if appConfig.OrchestrationModeEnabled() {
 		initOrchestrationBasedApp(*appConfig)

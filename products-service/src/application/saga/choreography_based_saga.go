@@ -9,7 +9,7 @@ import (
 )
 
 type Coordinator interface {
-	HandleSagaEvent(application.OrderPlaced, map[string]string)
+	HandleSagaEvent(application.UpdateRequested, map[string]string)
 	HandleSagaRollbackEvent(application.OrderFailed, map[string]string)
 }
 
@@ -29,7 +29,7 @@ func NewChoreographyCoordinator(orderEventHandler application.OrderEventHandler,
 	}
 }
 
-func (coordinator *ChoreographyCoordinator) HandleSagaEvent(inputEvent application.OrderPlaced,
+func (coordinator *ChoreographyCoordinator) HandleSagaEvent(inputEvent application.UpdateRequested,
 	inputHeaders map[string]string) {
 	orderItemsReserved, err := coordinator.orderEventHandler.Handle(inputEvent)
 	outputHeaders := map[string]string{
@@ -53,7 +53,7 @@ func (coordinator *ChoreographyCoordinator) HandleSagaEvent(inputEvent applicati
 	}
 
 	outputHeaders[messaging.StepResultHeader] = "SUCCESS"
-	coordinator.producer.Send(orderItemsReserved, outputHeaders, coordinator.topics.ItemsReservedTopic)
+	coordinator.producer.Send(orderItemsReserved, outputHeaders, coordinator.topics.ItemsReserved)
 }
 
 func (coordinator *ChoreographyCoordinator) HandleSagaRollbackEvent(event application.OrderFailed,

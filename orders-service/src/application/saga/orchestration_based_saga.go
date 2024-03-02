@@ -61,7 +61,10 @@ func (orchestrator *OrchestrationCoordinator) HandleItemReservationStatusEvent(
 		orchestrator.requestPayment(paymentRequest, context)
 		log.Printf("Item reservation for order %s successful. Requesting order payment\n",
 			itemReservationStatus.OrderID.String())
-	} else {
+		return
+	}
+
+	if strings.EqualFold(itemReservationStatus.Status, "FAILED") {
 		log.Printf("Item reservation for order %s failed. Aborting order processing\n",
 			itemReservationStatus.OrderID.String())
 		orderFailed := application.OrderFailed{
@@ -70,6 +73,31 @@ func (orchestrator *OrchestrationCoordinator) HandleItemReservationStatusEvent(
 			Details:    "Failed to reserve requested items",
 		}
 		orchestrator.terminateOrder(context, orderFailed)
+		return
+	}
+
+	if strings.EqualFold(itemReservationStatus.Status, "ROLLBACK_SUCCESS") {
+		log.Printf("Item reservation rollback for order %s successful. Terminating order.\n",
+			itemReservationStatus.OrderID.String())
+		orderFailed := application.OrderFailed{
+			OrderID:    itemReservationStatus.OrderID,
+			CustomerID: itemReservationStatus.CustomerID,
+			Details:    "Failed to process payment for order. Reserved items have been released",
+		}
+		orchestrator.terminateOrder(context, orderFailed)
+		return
+	}
+
+	if strings.EqualFold(itemReservationStatus.Status, "ROLLBACK_FAILED") {
+		log.Printf("Item reservation for order %s failed. Aborting order processing\n",
+			itemReservationStatus.OrderID.String())
+		orderFailed := application.OrderFailed{
+			OrderID:    itemReservationStatus.OrderID,
+			CustomerID: itemReservationStatus.CustomerID,
+			Details:    "Failed to reserve requested items",
+		}
+		orchestrator.terminateOrder(context, orderFailed)
+		return
 	}
 
 }
@@ -93,7 +121,7 @@ func (orchestrator *OrchestrationCoordinator) HandlePaymentStatusEvent(paymentSt
 
 	log.Printf("Handling ItemsReserved for order %s\n", paymentStatus.OrderID.String())
 
-	if paymentStatus.Status == "success" {
+	if strings.EqualFold(paymentStatus.Status, "SUCCESS") {
 		orderCompleted := application.OrderCompleted{
 			OrderID:    paymentStatus.OrderID,
 			CustomerID: paymentStatus.CustomerID,
@@ -104,10 +132,7 @@ func (orchestrator *OrchestrationCoordinator) HandlePaymentStatusEvent(paymentSt
 	} else {
 		log.Printf("Payment for order %s failed. Requesting global rollback of all steps.",
 			paymentStatus.OrderID.String())
-		paymentFailed := application.PaymentFailed{
-			OrderID: paymentStatus.OrderID,
-		}
-		orchestrator.terminateOrder(context, paymentFailed)
+		orchestrator.requestProductReservationRollback(paymentStatus.OrderID, context)
 	}
 
 }
@@ -123,10 +148,11 @@ func (orchestrator *OrchestrationCoordinator) requestProductReservationRollback(
 		messaging.TransactionStartedAtHeader: context.TransactionStartedAt,
 		messaging.TransactionStatusHeader:    "PENDING",
 	}
-	paymentFailedEvent := application.PaymentFailed{
-		OrderID: orderId,
+	paymentFailedEvent := application.ItemReservationRollbackRequest{
+		OrderID:    orderId,
+		IsRollback: true,
 	}
-	orchestrator.producer.Send(paymentFailedEvent, messageHeaders, orchestrator.topics.InventoryUpdateStatus)
+	orchestrator.producer.Send(paymentFailedEvent, messageHeaders, orchestrator.topics.InventoryUpdateRequest)
 }
 
 func (orchestrator *OrchestrationCoordinator) terminateOrder(context Context, failedEvent interface{}) {

@@ -19,7 +19,7 @@ func NewOrderEventHandler(db *gorm.DB) *OrderEventHandler {
 	return &OrderEventHandler{db}
 }
 
-func (handler *OrderEventHandler) Handle(orderPlacedEvent OrderPlaced) (*OrderItemsReserved, error) {
+func (handler *OrderEventHandler) Handle(orderPlacedEvent UpdateRequested) (*OrderItemsReserved, error) {
 	tx := handler.db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -84,7 +84,7 @@ func (handler *OrderEventHandler) reserveProduct(tx *gorm.DB, productId uuid.UUI
 	return product, nil
 }
 
-func (handler *OrderEventHandler) updateTransactionLog(tx *gorm.DB, event OrderPlaced) error {
+func (handler *OrderEventHandler) updateTransactionLog(tx *gorm.DB, event UpdateRequested) error {
 	orderItemsJsonBody, err := json.Marshal(event.OrderItems)
 	if err != nil {
 		return err

@@ -24,7 +24,19 @@ func NewOrchestrationCoordinator(orderEventHandler application.OrderEventHandler
 	}
 }
 
-func (coordinator *OrchestrationCoordinator) HandleSagaEvent(inputEvent application.OrderPlaced,
+func (coordinator *OrchestrationCoordinator) HandleSagaEvent(inputEvent application.UpdateRequested,
+	inputHeaders map[string]string) {
+
+	if inputEvent.IsRollback {
+		coordinator.HandleSagaRollbackEvent(application.OrderFailed{
+			OrderID: inputEvent.OrderID,
+		}, inputHeaders)
+	} else {
+		coordinator.handleItemUpdateEvent(inputEvent, inputHeaders)
+	}
+
+}
+func (coordinator *OrchestrationCoordinator) handleItemUpdateEvent(inputEvent application.UpdateRequested,
 	inputHeaders map[string]string) {
 	itemsReserved, err := coordinator.orderEventHandler.Handle(inputEvent)
 	outputHeaders := map[string]string{
@@ -35,7 +47,6 @@ func (coordinator *OrchestrationCoordinator) HandleSagaEvent(inputEvent applicat
 		messaging.TransactionNameHeader:      inputHeaders[messaging.TransactionNameHeader],
 		messaging.TransactionStartedAtHeader: inputHeaders[messaging.TransactionStartedAtHeader],
 	}
-
 	if err != nil {
 		log.Printf("Items reservation for order %s failed", inputEvent.OrderID)
 		itemsReservationFailed := &application.ItemReservationStatus{
@@ -58,14 +69,44 @@ func (coordinator *OrchestrationCoordinator) HandleSagaEvent(inputEvent applicat
 	}
 }
 
-func (coordinator *OrchestrationCoordinator) HandleSagaRollbackEvent(event application.OrderFailed,
-	headers map[string]string) {
-	if headers[messaging.StepExecutorHeader] != "PRODUCTS_SERVICE" {
-		err := coordinator.orderEventHandler.HandleRollback(event)
-		if err != nil {
-			log.Printf("Error rollbacking order with id %s", event.OrderID)
-			return
+func (coordinator *OrchestrationCoordinator) HandleSagaRollbackEvent(inputEvent application.OrderFailed,
+	inputHeaders map[string]string) {
+	rollbackEvent := application.OrderFailed{
+		OrderID: inputEvent.OrderID,
+	}
+	err := coordinator.orderEventHandler.HandleRollback(rollbackEvent)
+	if err != nil {
+		log.Printf("Items reservation rollback for order %s failed", inputEvent.OrderID)
+		outputHeaders := map[string]string{
+			messaging.StepIdHeader:               uuid.New().String(),
+			messaging.StepNameHeader:             "INVENTORY_UPDATE_ROLLBACK_REQUESTED",
+			messaging.StepExecutorHeader:         "PRODUCTS_SERVICE",
+			messaging.TransactionIdHeader:        inputHeaders[messaging.TransactionIdHeader],
+			messaging.TransactionNameHeader:      inputHeaders[messaging.TransactionNameHeader],
+			messaging.TransactionStartedAtHeader: inputHeaders[messaging.TransactionStartedAtHeader],
 		}
-		log.Printf("Successfully rollbacked order with id %s", event.OrderID)
+		rollbackFailedEvent := &application.ItemReservationStatus{
+			OrderID: inputEvent.OrderID,
+			Details: err.Error(),
+			Status:  "ROLLBACK_FAILED",
+		}
+		outputHeaders[messaging.StepResultHeader] = "FAILED"
+		coordinator.producer.Send(rollbackFailedEvent, outputHeaders, coordinator.topics.InventoryUpdateStatus)
+	} else {
+		log.Printf("Items reservation rollback for order %s syccess", inputEvent.OrderID)
+		outputHeaders := map[string]string{
+			messaging.StepIdHeader:               uuid.New().String(),
+			messaging.StepNameHeader:             "INVENTORY_UPDATE_ROLLBACK_REQUESTED",
+			messaging.StepExecutorHeader:         "PRODUCTS_SERVICE",
+			messaging.TransactionIdHeader:        inputHeaders[messaging.TransactionIdHeader],
+			messaging.TransactionNameHeader:      inputHeaders[messaging.TransactionNameHeader],
+			messaging.TransactionStartedAtHeader: inputHeaders[messaging.TransactionStartedAtHeader],
+		}
+		rollbackSuccessEvent := &application.ItemReservationStatus{
+			OrderID: inputEvent.OrderID,
+			Status:  "ROLLBACK_SUCCESS",
+		}
+		outputHeaders[messaging.StepResultHeader] = "SUCCESS"
+		coordinator.producer.Send(rollbackSuccessEvent, outputHeaders, coordinator.topics.InventoryUpdateStatus)
 	}
 }

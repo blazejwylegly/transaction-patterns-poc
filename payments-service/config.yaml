@@ -1,11 +1,12 @@
 # 0 - choreography
 # 1 - orchestration
-mode: 0
+application:
+  mode: 1
 
 # Server configurations
 server:
   host: localhost
-  port: 8081
+  port: 8082
 
 # Database credentials
 database:
@@ -22,6 +23,6 @@ kafka:
   topics:
     itemsReserved: 'items-reserved'
     paymentProcessed: 'payment-processed'
-    paymentRequest: 'payment-requested'
+    paymentRequested: 'payment-requested'
     paymentStatus: 'payment-status'
     txnError: 'txn-error'

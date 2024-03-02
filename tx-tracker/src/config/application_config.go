@@ -30,7 +30,7 @@ type Config struct {
 			ItemsReserved          string `yaml:"itemsReserved" envconfig:"KAFKA_ITEMS_RESERVED_TOPIC"`
 			PaymentProcessed       string `yaml:"paymentProcessed" envconfig:"KAFKA_PAYMENT_PROCESSED_TOPIC"`
 			TxnError               string `yaml:"txnError" envconfig:"KAFKA_TXN_ERROR_TOPIC"`
-			InventoryUpdateRequest string `yaml:"orderRequest"  envconfig:"KAFKA_ORDER_REQUEST_TOPIC"`
+			InventoryUpdateRequest string `yaml:"inventoryUpdateRequest"  envconfig:"KAFKA_INVENTORY_UPDATE_REQUEST_TOPIC"`
 			InventoryUpdateStatus  string `yaml:"inventoryUpdateStatus" envconfig:"KAFKA_INVENTORY_UPDATE_STATUS_TOPIC"`
 			PaymentRequest         string `yaml:"paymentRequest" envconfig:"KAFKA_PAYMENT_REQUESTED_TOPIC"`
 			PaymentStatus          string `yaml:"paymentStatus" envconfig:"KAFKA_PAYMENT_PROCESSED_TOPIC"`

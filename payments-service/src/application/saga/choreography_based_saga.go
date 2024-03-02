@@ -11,7 +11,7 @@ import (
 )
 
 type Coordinator interface {
-	  n HandleSagaEvent(events.PaymentRequested, map[string]string)
+	HandleSagaEvent(events.PaymentRequested, map[string]string)
 }
 
 type ChoreographyCoordinator struct {

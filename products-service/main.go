@@ -22,6 +22,7 @@ func main() {
 	appConfig := config.New(configFileName)
 
 	if appConfig.ChoreographyModeEnabled() {
+		log.Printf("Starting app in choreography mode")
 		initChoreographyBasedApp(appConfig)
 	} else {
 		initOrchestrationBasedApp(appConfig)
@@ -117,7 +118,7 @@ func initChoreographyBasedApp(appConfig *config.Config) {
 	itemReservationRequestHandler := handlers.NewItemReservationRequestHandler(sagaCoordinator)
 	itemReservationRequestListener := messaging.NewListener(*kafkaClient,
 		itemReservationRequestHandler.Handle,
-		appConfig.Kafka.Topics.InventoryUpdateRequest)
+		appConfig.Kafka.Topics.OrderPlaced)
 	itemReservationRequestListener.StartConsuming()
 
 	orderFailedHandler := handlers.NewOrderFailedHandler(sagaCoordinator)
