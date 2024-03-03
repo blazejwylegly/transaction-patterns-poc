@@ -29,10 +29,11 @@ func (coordinator *ChoreographyCoordinator) BeginOrderPlacedTransaction(order ap
 		messaging.StepIdHeader:               uuid.New().String(),
 		messaging.StepNameHeader:             "ORDER_PLACED",
 		messaging.StepExecutorHeader:         "ORDER_SERVICE",
-		messaging.StepStatusHeader:           "SUCCESS",
+		messaging.StepStatusHeader:           messaging.StepStatusSuccess,
 		messaging.TransactionIdHeader:        uuid.New().String(),
 		messaging.TransactionNameHeader:      "PRODUCT_PURCHASED",
 		messaging.TransactionStartedAtHeader: time.Now().String(),
+		messaging.StepStartedAtHeader:        time.Now().String(),
 	}
 
 	coordinator.producer.Send(order, messageHeaders, coordinator.orderPlacedTopic)

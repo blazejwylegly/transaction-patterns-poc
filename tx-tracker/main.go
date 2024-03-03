@@ -36,53 +36,56 @@ func main() {
 	txRepository := db.NewDbRepository(dbConnection)
 
 	// TX HANDLER
-	txHandler := transactions.NewTxnStepHandler(dbConnection)
+	txnService := transactions.NewTxnService(dbConnection)
+	genericStepHandler := listener.NewGenericStepMessageHandler(*txnService)
 
 	// TOPIC LISTENERS
 	orderRequestListener := listener.NewTopicListener(*kafkaClient,
-		*txHandler,
+		genericStepHandler.HandleTxnStepMessage,
 		appConfig.GetKafkaConfig().KafkaTopics.OrderPlaced)
 	orderRequestListener.StartConsuming()
 
 	itemsReservedListener := listener.NewTopicListener(*kafkaClient,
-		*txHandler,
+		genericStepHandler.HandleTxnStepMessage,
 		appConfig.GetKafkaConfig().KafkaTopics.ItemsReserved)
 	itemsReservedListener.StartConsuming()
 
 	paymentCompletedListener := listener.NewTopicListener(*kafkaClient,
-		*txHandler,
+		genericStepHandler.HandleTxnStepMessage,
 		appConfig.GetKafkaConfig().KafkaTopics.PaymentProcessed)
 	paymentCompletedListener.StartConsuming()
 
 	orderResultsListener := listener.NewTopicListener(*kafkaClient,
-		*txHandler,
+		genericStepHandler.HandleTxnStepMessage,
 		appConfig.GetKafkaConfig().KafkaTopics.TxnError)
 	orderResultsListener.StartConsuming()
 
-	orderFailedListener := listener.NewTopicListener(*kafkaClient,
-		*txHandler,
-		appConfig.GetKafkaConfig().KafkaTopics.OrderStatus)
-	orderFailedListener.StartConsuming()
-
 	inventoryUpdateRequestListener := listener.NewTopicListener(*kafkaClient,
-		*txHandler,
+		genericStepHandler.HandleTxnStepMessage,
 		appConfig.GetKafkaConfig().KafkaTopics.InventoryUpdateRequest)
 	inventoryUpdateRequestListener.StartConsuming()
 
 	inventoryUpdateStatusListener := listener.NewTopicListener(*kafkaClient,
-		*txHandler,
+		genericStepHandler.HandleTxnStepMessage,
 		appConfig.GetKafkaConfig().KafkaTopics.InventoryUpdateStatus)
 	inventoryUpdateStatusListener.StartConsuming()
 
 	paymentRequestListener := listener.NewTopicListener(*kafkaClient,
-		*txHandler,
+		genericStepHandler.HandleTxnStepMessage,
 		appConfig.GetKafkaConfig().KafkaTopics.PaymentRequest)
 	paymentRequestListener.StartConsuming()
 
 	paymentStatusListener := listener.NewTopicListener(*kafkaClient,
-		*txHandler,
+		genericStepHandler.HandleTxnStepMessage,
 		appConfig.GetKafkaConfig().KafkaTopics.PaymentStatus)
 	paymentStatusListener.StartConsuming()
+
+	// FINAL STEP
+	finalStepHandler := listener.NewFinalStepMessageHandler(*txnService)
+	orderFailedListener := listener.NewTopicListener(*kafkaClient,
+		finalStepHandler.HandleTxnStepMessage,
+		appConfig.GetKafkaConfig().KafkaTopics.OrderStatus)
+	orderFailedListener.StartConsuming()
 
 	// WEB
 	router := mux.NewRouter()

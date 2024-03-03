@@ -60,24 +60,8 @@ func (kafkaClient *KafkaClient) NewConsumer() (*sarama.Consumer, error) {
 	return &consumer, nil
 }
 
-func (kafkaClient *KafkaClient) GetPartitions(topic string) (chan int32, error) {
-
-	partitions, err := kafkaClient.consumer.Partitions(topic)
-	if err != nil {
-		log.Printf("Error trying to obtain partitions for topic %s", topic)
-		return nil, err
-	}
-
-	partitionsChannel := make(chan int32)
-
-	go func() {
-		defer close(partitionsChannel)
-		for _, partition := range partitions {
-			partitionsChannel <- partition
-		}
-	}()
-
-	return partitionsChannel, nil
+func (kafkaClient *KafkaClient) GetPartitions(topic string) ([]int32, error) {
+	return kafkaClient.consumer.Partitions(topic)
 }
 
 func (kafkaClient *KafkaClient) ConsumePartition(topic string, partition int32) (sarama.PartitionConsumer, error) {

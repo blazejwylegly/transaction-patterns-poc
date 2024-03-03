@@ -38,8 +38,7 @@ type PaymentRequest struct {
 }
 
 type ItemReservationRollbackRequest struct {
-	OrderID    uuid.UUID `json:"order_id"`
-	IsRollback bool      `json:"is_rollback"`
+	OrderID uuid.UUID `json:"order_id"`
 }
 
 type PaymentStatus struct {

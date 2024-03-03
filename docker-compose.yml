@@ -42,46 +42,17 @@ services:
     entrypoint: [ '/bin/sh', '-c' ]
     command: |
       "
-      # blocks until kafka is reachable
       kafka-topics --bootstrap-server kafka:29092 --list
       
-      echo -e '################## Creating topics used globally ##################'
+      topics=("order-placed" "items-reserved" "payment-processed" "payment-requested" "payment-status" "order-status" "txn-error" "inventory-update-request" "inventory-update-status")
       
-      echo -e 'Creating order-status topic'
-      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic order-status --replication-factor 1 --partitions 4
-
-
-      echo -e '################## Creating topics used by choreography flow ##################'
-
-      echo -e 'Creating order-placed topic'
-      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic order-placed  --replication-factor 1 --partitions 4
-      
-      echo -e 'Creating items-reserved topic'
-      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic items-reserved --replication-factor 1 --partitions 4
-            
-      echo -e 'Creating payment-processed topic'
-      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic payment-processed --replication-factor 1 --partitions 4
-
-      echo -e 'Creating txn-error topic'
-      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic txn-error --replication-factor 1 --partitions 4
-      
-      
-      echo -e '################## Creating topics used by orchestration flow ##################'
-
-      echo -e 'Creating inventory-update-request topic'
-      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic inventory-update-request --replication-factor 1 --partitions 4
-
-      echo -e 'Creating inventory-update-status topic'
-      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic inventory-update-status --replication-factor 1 --partitions 4
-      
-      echo -e 'Creating payment-requested topic'
-      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic payment-requested --replication-factor 1 --partitions 4
-      
-      echo -e 'Creating payment-status topic'
-      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic payment-status --replication-factor 1 --partitions 4
+      for topic in "$${topics[@]}"; do
+        kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic "$$topic" --replication-factor 1
+        kafka-topics --bootstrap-server kafka:29092 --alter --topic "$$topic" --partitions 4
+      done
       
       echo -e 'Successfully created the following topics:'
-      kafka-topics --bootstrap-server kafka:29092 --list
+      kafka-topics --bootstrap-server kafka:29092 --describe
       "
 
   orders-service:

@@ -8,6 +8,7 @@ import (
 	"github.com/blazejwylegly/transactions-poc/payments-service/src/messaging/producer"
 	"github.com/google/uuid"
 	"log"
+	"time"
 )
 
 type OrchestrationCoordinator struct {
@@ -31,8 +32,9 @@ func (coordinator *OrchestrationCoordinator) HandleSagaEvent(inputEvent events.P
 	paymentProcessed, err := coordinator.eventHandler.Handle(inputEvent)
 	messageHeaders := map[string]string{
 		messaging.StepIdHeader:               uuid.New().String(),
-		messaging.StepNameHeader:             "PAYMENT_COMPLETED",
+		messaging.StepNameHeader:             "PAYMENT_REQUESTED",
 		messaging.StepExecutorHeader:         "PAYMENTS_SERVICE",
+		messaging.StepStartedAtHeader:        time.Now().String(),
 		messaging.TransactionIdHeader:        headers[messaging.TransactionIdHeader],
 		messaging.TransactionNameHeader:      headers[messaging.TransactionNameHeader],
 		messaging.TransactionStartedAtHeader: headers[messaging.TransactionStartedAtHeader],
@@ -44,10 +46,10 @@ func (coordinator *OrchestrationCoordinator) HandleSagaEvent(inputEvent events.P
 			CustomerID: inputEvent.CustomerID,
 			Details:    err.Error(),
 		}
-		messageHeaders[messaging.StepResultHeader] = "FAILED"
+		messageHeaders[messaging.StepStatusHeader] = "FAILED"
 		coordinator.producer.Send(paymentFailed, messageHeaders, coordinator.topics.PaymentStatus)
 	} else {
-		messageHeaders[messaging.StepResultHeader] = "SUCCESS"
+		messageHeaders[messaging.StepStatusHeader] = "SUCCESS"
 		coordinator.producer.Send(paymentProcessed, messageHeaders, coordinator.topics.PaymentStatus)
 	}
 

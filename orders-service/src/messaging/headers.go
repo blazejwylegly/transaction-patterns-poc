@@ -11,6 +11,22 @@ const (
 	StepNameHeader             = "txn_step_name"
 	StepExecutorHeader         = "txn_step_executor"
 	StepStatusHeader           = "txn_step_status"
+	StepStartedAtHeader        = "txn_step_started_at"
+)
+
+const (
+	ItemReservationRequestedStep         = "ITEM_RESERVATION_REQUESTED"
+	ItemReservationRollbackRequestedStep = "ITEM_RESERVATION_ROLLBACK_REQUESTED"
+	PaymentRequestedStep                 = "PAYMENT_REQUESTED"
+	OrderCompletedStep                   = "ORDER_COMPLETED"
+	OrderCancelledStep                   = "ORDER_CANCELLED"
+	StepStatusPending                    = "PENDING"
+	StepStatusSuccess                    = "SUCCESS"
+	StepStatusFailed                     = "FAILED"
+	TxnStatusPending                     = "PENDING"
+	TxnStatusRollbackInProgress          = "ROLLBACK_IN_PROGRESS"
+	TxnStatusSuccess                     = "SUCCESS"
+	TxnStatusFailed                      = "FAILED"
 )
 
 func ParseHeaders(recordHeaders []*sarama.RecordHeader) map[string]string {

@@ -23,6 +23,7 @@ func NewKafkaClient(cfg config.Config) *KafkaClient {
 	sarama.Logger = log.New(os.Stdout, "[sarama] ", log.LstdFlags)
 	saramaConfig.Metadata.Retry.Max = 10
 	saramaConfig.Metadata.Retry.Backoff = time.Second * 5
+	saramaConfig.ClientID = "orders-service"
 
 	// Producer
 	saramaConfig.Producer.Flush.Frequency = time.Duration(cfg.GetKafkaConfig().KafkaFlushFrequencyMs) * time.Millisecond

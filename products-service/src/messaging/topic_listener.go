@@ -26,7 +26,7 @@ func NewListener(client KafkaClient, processor func(chan *sarama.ConsumerMessage
 func (listener *TopicListener) StartConsuming() {
 	partitions, _ := listener.kafkaClient.GetPartitions(listener.topic)
 	var wg sync.WaitGroup
-	for partition := range partitions {
+	for _, partition := range partitions {
 		go listener.consumePartition(&wg, partition)
 	}
 }

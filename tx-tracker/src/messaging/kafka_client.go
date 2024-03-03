@@ -23,6 +23,7 @@ func NewKafkaClient(kafkaConfig config.KafkaConfig) *KafkaClient {
 	sarama.Logger = log.New(os.Stdout, "[sarama] ", log.LstdFlags)
 	saramaConfig.Metadata.Retry.Max = 10
 	saramaConfig.Metadata.Retry.Backoff = time.Second * 5
+	saramaConfig.ClientID = "tx-tracker"
 
 	// Consumer config
 	saramaConfig.Consumer.Offsets.Initial = sarama.OffsetNewest

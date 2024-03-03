@@ -14,11 +14,11 @@ type Transaction struct {
 }
 
 type TransactionStep struct {
-	StepId       uuid.UUID `gorm:"type:uuid;column:step_id;primary_key"`
-	TxnId        uuid.UUID
-	StepName     string
-	StepExecutor string
-	StepStatus   string
-	Payload      string `gorm:"type:jsonb" json:"payload"`
-	Headers      string `gorm:"type:jsonb" json:"headers"`
+	StepId        uuid.UUID `gorm:"type:uuid;column:step_id;primary_key"`
+	Topic         string
+	TxnId         uuid.UUID
+	StepName      string
+	StepExecutor  string
+	StepStatus    string
+	StepStartedAt string
 }

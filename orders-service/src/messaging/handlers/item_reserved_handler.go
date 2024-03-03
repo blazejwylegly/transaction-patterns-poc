@@ -21,18 +21,23 @@ func NewItemReservationStatusHandler(coordinator saga.OrchestrationCoordinator) 
 func (handler *ItemReservationStatusHandler) Handle() func(chan *sarama.ConsumerMessage) {
 	return func(messagesChannel chan *sarama.ConsumerMessage) {
 		for msg := range messagesChannel {
-			itemReservationStatus, err := parseItemReservationStatus(msg)
-			if err != nil {
-				log.Printf("Error trying to parse event for message with offset %d", msg.Offset)
-				return
-			}
 			headers := messaging.ParseHeaders(msg.Headers)
 			context, err := saga.ContextFromHeaders(headers)
 			if err != nil {
 				log.Printf("Error trying to parse transaction context for message with offset %d", msg.Offset)
 				return
 			}
-			handler.sagaCoordinator.HandleItemReservationStatusEvent(*itemReservationStatus, *context)
+			itemReservationStatus, err := parseItemReservationStatus(msg)
+			if err != nil {
+				log.Printf("Error trying to parse event for message with offset %d", msg.Offset)
+				return
+			}
+			if headers[messaging.StepNameHeader] == messaging.ItemReservationRequestedStep {
+				handler.sagaCoordinator.HandleItemReservationStatusEvent(*itemReservationStatus, *context)
+			} else if headers[messaging.StepNameHeader] == messaging.ItemReservationRollbackRequestedStep {
+				handler.sagaCoordinator.HandleItemReservationRollbackStatusEvent(*itemReservationStatus, *context)
+			}
+
 		}
 	}
 

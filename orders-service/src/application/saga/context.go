@@ -12,17 +12,7 @@ type Context struct {
 	PreviousStepId       uuid.UUID
 	PreviousStepName     string
 	PreviousStepExecutor string
-}
-
-func (ctx *Context) ToHeaders() map[string]string {
-	return map[string]string{
-		messaging.TransactionIdHeader:        ctx.TransactionId.String(),
-		messaging.TransactionNameHeader:      ctx.TransactionName,
-		messaging.TransactionStartedAtHeader: ctx.TransactionStartedAt,
-		messaging.StepIdHeader:               ctx.PreviousStepId.String(),
-		messaging.StepNameHeader:             ctx.PreviousStepName,
-		messaging.StepExecutorHeader:         ctx.PreviousStepExecutor,
-	}
+	PreviousStepStatus   string
 }
 
 func ContextFromHeaders(headers map[string]string) (*Context, error) {
@@ -43,5 +33,6 @@ func ContextFromHeaders(headers map[string]string) (*Context, error) {
 		PreviousStepId:       stepId,
 		PreviousStepExecutor: headers[messaging.StepExecutorHeader],
 		PreviousStepName:     headers[messaging.StepNameHeader],
+		PreviousStepStatus:   headers[messaging.StepStatusHeader],
 	}, nil
 }

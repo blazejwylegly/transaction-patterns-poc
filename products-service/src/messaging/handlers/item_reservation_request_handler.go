@@ -35,7 +35,7 @@ func NewItemReservationRequestHandler(coordinator saga.Coordinator) *ItemReserva
 
 func (handler *ItemReservationRequestHandler) Handle(messagesChannel chan *sarama.ConsumerMessage) {
 	for msg := range messagesChannel {
-		event := &application.UpdateRequested{}
+		event := &application.InventoryUpdateRequest{}
 		err := parseEvent(event, msg)
 		if err != nil {
 			fmt.Printf("Error parsing msg { partition:'%d', offset:'%d' }: %v\n", msg.Partition, msg.Offset, err)

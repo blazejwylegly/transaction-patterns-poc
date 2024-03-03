@@ -8,6 +8,7 @@ import (
 	"github.com/blazejwylegly/transactions-poc/payments-service/src/messaging/producer"
 	"github.com/google/uuid"
 	"log"
+	"time"
 )
 
 type Coordinator interface {
@@ -40,6 +41,7 @@ func (coordinator *ChoreographyCoordinator) HandleSagaEvent(inputEvent events.Pa
 		messaging.TransactionIdHeader:        headers[messaging.TransactionIdHeader],
 		messaging.TransactionNameHeader:      headers[messaging.TransactionNameHeader],
 		messaging.TransactionStartedAtHeader: headers[messaging.TransactionStartedAtHeader],
+		messaging.StepStartedAtHeader:        time.Now().String(),
 	}
 	if err != nil {
 		log.Printf("Txn with id %s failed - initiating rollback", headers[messaging.TransactionIdHeader])
@@ -48,11 +50,11 @@ func (coordinator *ChoreographyCoordinator) HandleSagaEvent(inputEvent events.Pa
 			CustomerID: inputEvent.CustomerID,
 			Details:    err.Error(),
 		}
-		messageHeaders[messaging.StepResultHeader] = "FAILED"
+		messageHeaders[messaging.StepStatusHeader] = "FAILED"
 		coordinator.producer.Send(paymentFailed, messageHeaders, coordinator.topics.TxnError)
 		return
 	}
 
-	messageHeaders[messaging.StepResultHeader] = "SUCCESS"
+	messageHeaders[messaging.StepStatusHeader] = "SUCCESS"
 	coordinator.producer.Send(paymentProcessed, messageHeaders, coordinator.topics.PaymentProcessed)
 }

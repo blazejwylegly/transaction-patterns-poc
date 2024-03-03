@@ -11,12 +11,11 @@ type OrderItemsReserved struct {
 	TotalCost  float64   `json:"total_cost"`
 }
 
-type UpdateRequested struct {
+type InventoryUpdateRequest struct {
 	OrderID    uuid.UUID   `json:"order_id"`
 	CustomerID uuid.UUID   `json:"customer_id"`
 	OrderItems []OrderItem `json:"order_items"`
 	PlacedAt   time.Time   `json:"placed_at"`
-	IsRollback bool        `json:"is_rollback"`
 }
 
 type OrderItem struct {
@@ -30,6 +29,10 @@ type ItemReservationStatus struct {
 	TotalCost  float64   `json:"total_cost"`
 	Status     string    `json:"status"`
 	Details    string    `json:"details"`
+}
+
+type ItemsReleased struct {
+	OrderID uuid.UUID `json:"order_id"`
 }
 
 type OrderFailed struct {
