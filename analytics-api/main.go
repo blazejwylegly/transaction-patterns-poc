@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/IBM/sarama"
+	"github.com/blazejwylegly/transactions-poc/analytics-api/src/analytics"
 	"github.com/blazejwylegly/transactions-poc/analytics-api/src/config"
 	"github.com/blazejwylegly/transactions-poc/analytics-api/src/db"
 	"github.com/blazejwylegly/transactions-poc/analytics-api/src/messaging"
@@ -86,6 +87,9 @@ func main() {
 		finalStepHandler.HandleTxnStepMessage,
 		appConfig.GetKafkaConfig().KafkaTopics.OrderStatus)
 	orderFailedListener.StartConsuming()
+
+	// START TESTING ROUTINE
+	sagaAnalyzer := analytics.NewSagaAnalyzer()
 
 	// WEB
 	router := mux.NewRouter()
