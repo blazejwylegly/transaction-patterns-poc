@@ -3,19 +3,19 @@ package listener
 import (
 	"fmt"
 	"github.com/IBM/sarama"
-	"github.com/blazejwylegly/transactions-poc/tx-tracker/src/messaging"
-	"github.com/blazejwylegly/transactions-poc/tx-tracker/src/transactions"
+	"github.com/blazejwylegly/transactions-poc/analytics-api/src/messaging"
+	"github.com/blazejwylegly/transactions-poc/analytics-api/src/transactions"
 )
 
-type FinalStepMessageHandler struct {
+type GenericStepMessageHandler struct {
 	txnService transactions.TxnService
 }
 
-func NewFinalStepMessageHandler(txnService transactions.TxnService) *FinalStepMessageHandler {
-	return &FinalStepMessageHandler{txnService: txnService}
+func NewGenericStepMessageHandler(txnService transactions.TxnService) *GenericStepMessageHandler {
+	return &GenericStepMessageHandler{txnService: txnService}
 }
 
-func (handler *FinalStepMessageHandler) HandleTxnStepMessage(topic string, message sarama.ConsumerMessage) {
+func (handler *GenericStepMessageHandler) HandleTxnStepMessage(topic string, message sarama.ConsumerMessage) {
 	headers := parseHeaders(message.Headers)
 	txnContext, err := parseTransactionContext(headers)
 	if err != nil {
@@ -33,5 +33,5 @@ func (handler *FinalStepMessageHandler) HandleTxnStepMessage(topic string, messa
 		return
 	}
 
-	handler.txnService.HandleFinalTxnStep(*txnContext, txnStep)
+	handler.txnService.HandleTxnStep(*txnContext, txnStep)
 }

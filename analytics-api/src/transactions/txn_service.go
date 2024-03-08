@@ -3,7 +3,7 @@ package transactions
 import (
 	"errors"
 	"fmt"
-	"github.com/blazejwylegly/transactions-poc/tx-tracker/src/db"
+	"github.com/blazejwylegly/transactions-poc/analytics-api/src/db"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"log"

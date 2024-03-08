@@ -1,7 +1,7 @@
 package db
 
 import (
-	"github.com/blazejwylegly/transactions-poc/tx-tracker/src/config"
+	"github.com/blazejwylegly/transactions-poc/analytics-api/src/config"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"

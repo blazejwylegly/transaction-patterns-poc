@@ -1,7 +1,7 @@
 package web
 
 import (
-	"github.com/blazejwylegly/transactions-poc/tx-tracker/src/db"
+	"github.com/blazejwylegly/transactions-poc/analytics-api/src/db"
 	"github.com/gorilla/mux"
 	"net/http"
 )

@@ -1,4 +1,4 @@
-module github.com/blazejwylegly/transactions-poc/tx-tracker
+module github.com/blazejwylegly/transactions-poc/analytics-api
 
 go 1.19
 

@@ -2,12 +2,12 @@ package main
 
 import (
 	"github.com/IBM/sarama"
-	"github.com/blazejwylegly/transactions-poc/tx-tracker/src/config"
-	"github.com/blazejwylegly/transactions-poc/tx-tracker/src/db"
-	"github.com/blazejwylegly/transactions-poc/tx-tracker/src/messaging"
-	"github.com/blazejwylegly/transactions-poc/tx-tracker/src/messaging/listener"
-	"github.com/blazejwylegly/transactions-poc/tx-tracker/src/transactions"
-	"github.com/blazejwylegly/transactions-poc/tx-tracker/src/web"
+	"github.com/blazejwylegly/transactions-poc/analytics-api/src/config"
+	"github.com/blazejwylegly/transactions-poc/analytics-api/src/db"
+	"github.com/blazejwylegly/transactions-poc/analytics-api/src/messaging"
+	"github.com/blazejwylegly/transactions-poc/analytics-api/src/messaging/listener"
+	"github.com/blazejwylegly/transactions-poc/analytics-api/src/transactions"
+	"github.com/blazejwylegly/transactions-poc/analytics-api/src/web"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
