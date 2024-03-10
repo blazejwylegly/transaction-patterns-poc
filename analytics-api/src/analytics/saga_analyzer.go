@@ -2,10 +2,14 @@ package analytics
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 )
+
+const createOrderUrl = "http://localhost:"
 
 type SagaAnalyzer struct {
 	client http.Client
@@ -13,6 +17,49 @@ type SagaAnalyzer struct {
 
 func NewSagaAnalyzer() *SagaAnalyzer {
 	return &SagaAnalyzer{client: http.Client{}}
+}
+
+func startAnalysis() {
+	// create channel of requests
+	requestsChannel := make(chan *http.Request)
+	// create channel for responses
+	initializeRequestPool(requestsChannel)
+	//
+}
+
+func initializeRequestPool(channel chan *http.Request) {
+	customerId := "0e97f795-5e09-4d55-862c-f087401eb62b"
+	productId := "1acc1aa9-d40a-11ee-bb0e-80ce62448085"
+	quantityOrdered := 1
+
+	createOrderRequestBody := struct {
+		CustomerId string `json:"customer_id"`
+		OrderItems []struct {
+			ProductId       string `json:"product_id"`
+			QuantityOrdered int    `json:"quantity_ordered"`
+		} `json:"order_items"`
+	}{
+		CustomerId: customerId,
+		OrderItems: []struct {
+			ProductId       string `json:"product_id"`
+			QuantityOrdered int    `json:"quantity_ordered"`
+		}{
+			{
+				ProductId:       productId,
+				QuantityOrdered: quantityOrdered,
+			},
+		},
+	}
+
+	bodyJson, err := json.Marshal(createOrderRequestBody)
+	if err != nil {
+		log.Fatalf("Error trying to parse request object into string json")
+		return
+	}
+
+	for i := 0; i < 100; i++ {
+		request, err := http.NewRequest("POST", createOrderUrl, bodyJson)
+	}
 }
 
 func (analyzer *SagaAnalyzer) sendCreateOrderRequest() {
