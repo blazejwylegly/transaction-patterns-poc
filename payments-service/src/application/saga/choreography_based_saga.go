@@ -41,7 +41,7 @@ func (coordinator *ChoreographyCoordinator) HandleSagaEvent(inputEvent events.Pa
 		messaging.TransactionIdHeader:        headers[messaging.TransactionIdHeader],
 		messaging.TransactionNameHeader:      headers[messaging.TransactionNameHeader],
 		messaging.TransactionStartedAtHeader: headers[messaging.TransactionStartedAtHeader],
-		messaging.StepStartedAtHeader:        time.Now().String(),
+		messaging.StepStartedAtHeader:        time.Now().Format(time.RFC3339Nano),
 	}
 	if err != nil {
 		log.Printf("Txn with id %s failed - initiating rollback", headers[messaging.TransactionIdHeader])

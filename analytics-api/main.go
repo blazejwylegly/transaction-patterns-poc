@@ -24,7 +24,7 @@ func main() {
 	kafkaClient := messaging.NewKafkaClient(appConfig.GetKafkaConfig())
 
 	// KAFKA CONSUMER
-	kafkaConsumer, err := kafkaClient.NewConsumer()
+	kafkaConsumer, _ := kafkaClient.NewConsumer()
 	defer func(consumer sarama.Consumer) {
 		err := consumer.Close()
 		if err != nil {
@@ -40,7 +40,7 @@ func main() {
 	txnService := transactions.NewTxnService(dbConnection)
 	genericStepHandler := listener.NewGenericStepMessageHandler(*txnService)
 
-	// TOPIC LISTENERS
+	// CHOREOGRAPHY LISTENERS
 	orderRequestListener := listener.NewTopicListener(*kafkaClient,
 		genericStepHandler.HandleTxnStepMessage,
 		appConfig.GetKafkaConfig().KafkaTopics.OrderPlaced)
@@ -51,16 +51,17 @@ func main() {
 		appConfig.GetKafkaConfig().KafkaTopics.ItemsReserved)
 	itemsReservedListener.StartConsuming()
 
-	paymentCompletedListener := listener.NewTopicListener(*kafkaClient,
+	paymentProcessedListener := listener.NewTopicListener(*kafkaClient,
 		genericStepHandler.HandleTxnStepMessage,
 		appConfig.GetKafkaConfig().KafkaTopics.PaymentProcessed)
-	paymentCompletedListener.StartConsuming()
+	paymentProcessedListener.StartConsuming()
 
-	orderResultsListener := listener.NewTopicListener(*kafkaClient,
+	txnErrorListener := listener.NewTopicListener(*kafkaClient,
 		genericStepHandler.HandleTxnStepMessage,
 		appConfig.GetKafkaConfig().KafkaTopics.TxnError)
-	orderResultsListener.StartConsuming()
+	txnErrorListener.StartConsuming()
 
+	// ORCHESTRATION LISTENERS
 	inventoryUpdateRequestListener := listener.NewTopicListener(*kafkaClient,
 		genericStepHandler.HandleTxnStepMessage,
 		appConfig.GetKafkaConfig().KafkaTopics.InventoryUpdateRequest)
@@ -83,19 +84,23 @@ func main() {
 
 	// FINAL STEP
 	finalStepHandler := listener.NewFinalStepMessageHandler(*txnService)
-	orderFailedListener := listener.NewTopicListener(*kafkaClient,
+	orderStatusListener := listener.NewTopicListener(*kafkaClient,
 		finalStepHandler.HandleTxnStepMessage,
 		appConfig.GetKafkaConfig().KafkaTopics.OrderStatus)
-	orderFailedListener.StartConsuming()
+	orderStatusListener.StartConsuming()
+
+	// PREPARE TESTING ENVIRONMENT
+	txRepository.Purge()
 
 	// START TESTING ROUTINE
 	sagaAnalyzer := analytics.NewSagaAnalyzer()
+	successful, failed := sagaAnalyzer.StartAnalysis()
+	log.Printf("Success: %d, Failed: %d", successful, failed)
 
 	// WEB
 	router := mux.NewRouter()
 	web.InitTxApi(router, txRepository)
-
-	err = http.ListenAndServe(appConfig.GetServerUrl(), router)
+	err := http.ListenAndServe(appConfig.GetServerUrl(), router)
 	if err != nil {
 		log.Fatal(err)
 	}

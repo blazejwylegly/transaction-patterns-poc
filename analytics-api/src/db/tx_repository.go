@@ -21,8 +21,14 @@ func (repo *TxRepository) GetAll() []Transaction {
 
 	for _, transaction := range transactions {
 		sort.Slice(transaction.Steps, func(i, j int) bool {
-			timeI, _ := time.Parse(time.RFC3339, transaction.Steps[i].StepStartedAt)
-			timeJ, _ := time.Parse(time.RFC3339, transaction.Steps[j].StepStartedAt)
+			timeI, err := time.Parse(time.RFC3339Nano, transaction.Steps[i].StepStartedAt)
+			if err != nil {
+				log.Printf("Error parsing date %v", err)
+			}
+			timeJ, err := time.Parse(time.RFC3339Nano, transaction.Steps[j].StepStartedAt)
+			if err != nil {
+				log.Printf("Error parsing date %v", err)
+			}
 			return timeI.Before(timeJ)
 		})
 	}
@@ -31,4 +37,18 @@ func (repo *TxRepository) GetAll() []Transaction {
 		log.Fatal(err)
 	}
 	return transactions
+}
+
+func (repo *TxRepository) Purge() {
+	err := repo.db.Exec("DELETE FROM transaction_steps").Error
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("Trunacted transaction_steps table")
+	err = repo.db.Exec("DELETE FROM transactions").Error
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("Trunacted transactions table")
+
 }

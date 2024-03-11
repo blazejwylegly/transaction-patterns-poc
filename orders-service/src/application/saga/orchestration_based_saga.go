@@ -27,7 +27,7 @@ func (orchestrator *OrchestrationCoordinator) BeginOrderPlacedTransaction(order 
 	context := Context{
 		TransactionId:        uuid.New(),
 		TransactionName:      "PRODUCT_PURCHASED",
-		TransactionStartedAt: time.Now().String(),
+		TransactionStartedAt: time.Now().Format(time.RFC3339Nano),
 	}
 	orchestrator.requestProductReservation(order, context)
 }
@@ -42,7 +42,7 @@ func (orchestrator *OrchestrationCoordinator) requestProductReservation(order ap
 		messaging.StepNameHeader:             messaging.ItemReservationRequestedStep,
 		messaging.StepExecutorHeader:         "ORDER_SERVICE",
 		messaging.StepStatusHeader:           messaging.StepStatusPending,
-		messaging.StepStartedAtHeader:        time.Now().String(),
+		messaging.StepStartedAtHeader:        time.Now().Format(time.RFC3339Nano),
 	}
 	orchestrator.producer.Send(order, messageHeaders, orchestrator.topics.InventoryUpdateRequest)
 	log.Printf("Requested reservation for order %s\n", order.OrderID.String())
@@ -115,7 +115,7 @@ func (orchestrator *OrchestrationCoordinator) requestPayment(request application
 		messaging.StepNameHeader:             messaging.PaymentRequestedStep,
 		messaging.StepExecutorHeader:         "ORDER_SERVICE",
 		messaging.StepStatusHeader:           messaging.StepStatusPending,
-		messaging.StepStartedAtHeader:        time.Now().String(),
+		messaging.StepStartedAtHeader:        time.Now().Format(time.RFC3339Nano),
 		messaging.TransactionIdHeader:        context.TransactionId.String(),
 		messaging.TransactionNameHeader:      context.TransactionName,
 		messaging.TransactionStartedAtHeader: context.TransactionStartedAt,
@@ -151,7 +151,7 @@ func (orchestrator *OrchestrationCoordinator) requestProductReservationRollback(
 		messaging.StepNameHeader:             messaging.ItemReservationRollbackRequestedStep,
 		messaging.StepExecutorHeader:         "ORDER_SERVICE",
 		messaging.StepStatusHeader:           messaging.StepStatusPending,
-		messaging.StepStartedAtHeader:        time.Now().String(),
+		messaging.StepStartedAtHeader:        time.Now().Format(time.RFC3339Nano),
 		messaging.TransactionIdHeader:        context.TransactionId.String(),
 		messaging.TransactionNameHeader:      context.TransactionName,
 		messaging.TransactionStartedAtHeader: context.TransactionStartedAt,
@@ -164,12 +164,13 @@ func (orchestrator *OrchestrationCoordinator) requestProductReservationRollback(
 }
 
 func (orchestrator *OrchestrationCoordinator) terminateOrder(context Context, failedEvent interface{}) {
+	log.Printf("Order for txn %d terminated", context.TransactionId)
 	messageHeaders := map[string]string{
 		messaging.StepIdHeader:               uuid.New().String(),
 		messaging.StepNameHeader:             messaging.OrderCancelledStep,
 		messaging.StepExecutorHeader:         "ORDER_SERVICE",
 		messaging.StepStatusHeader:           messaging.StepStatusSuccess,
-		messaging.StepStartedAtHeader:        time.Now().String(),
+		messaging.StepStartedAtHeader:        time.Now().Format(time.RFC3339Nano),
 		messaging.TransactionIdHeader:        context.TransactionId.String(),
 		messaging.TransactionNameHeader:      context.TransactionName,
 		messaging.TransactionStartedAtHeader: context.TransactionStartedAt,
@@ -179,12 +180,13 @@ func (orchestrator *OrchestrationCoordinator) terminateOrder(context Context, fa
 }
 
 func (orchestrator *OrchestrationCoordinator) completeOrder(context Context, orderCompleted application.OrderCompleted) {
+	log.Printf("Order for txn %d completed", context.TransactionId)
 	messageHeaders := map[string]string{
 		messaging.StepIdHeader:               uuid.New().String(),
 		messaging.StepNameHeader:             messaging.OrderCompletedStep,
 		messaging.StepExecutorHeader:         "ORDER_SERVICE",
 		messaging.StepStatusHeader:           messaging.StepStatusSuccess,
-		messaging.StepStartedAtHeader:        time.Now().String(),
+		messaging.StepStartedAtHeader:        time.Now().Format(time.RFC3339Nano),
 		messaging.TransactionIdHeader:        context.TransactionId.String(),
 		messaging.TransactionNameHeader:      context.TransactionName,
 		messaging.TransactionStartedAtHeader: context.TransactionStartedAt,

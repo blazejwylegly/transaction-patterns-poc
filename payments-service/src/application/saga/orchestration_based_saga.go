@@ -34,7 +34,7 @@ func (coordinator *OrchestrationCoordinator) HandleSagaEvent(inputEvent events.P
 		messaging.StepIdHeader:               uuid.New().String(),
 		messaging.StepNameHeader:             "PAYMENT_REQUESTED",
 		messaging.StepExecutorHeader:         "PAYMENTS_SERVICE",
-		messaging.StepStartedAtHeader:        time.Now().String(),
+		messaging.StepStartedAtHeader:        time.Now().Format(time.RFC3339Nano),
 		messaging.TransactionIdHeader:        headers[messaging.TransactionIdHeader],
 		messaging.TransactionNameHeader:      headers[messaging.TransactionNameHeader],
 		messaging.TransactionStartedAtHeader: headers[messaging.TransactionStartedAtHeader],

@@ -46,7 +46,7 @@ func (coordinator *OrchestrationCoordinator) handleInventoryUpdateEvent(inputEve
 		messaging.StepIdHeader:               uuid.New().String(),
 		messaging.StepNameHeader:             inputHeaders[messaging.StepNameHeader],
 		messaging.StepExecutorHeader:         "PRODUCTS_SERVICE",
-		messaging.StepStartedAtHeader:        time.Now().String(),
+		messaging.StepStartedAtHeader:        time.Now().Format(time.RFC3339Nano),
 		messaging.TransactionIdHeader:        inputHeaders[messaging.TransactionIdHeader],
 		messaging.TransactionNameHeader:      inputHeaders[messaging.TransactionNameHeader],
 		messaging.TransactionStartedAtHeader: inputHeaders[messaging.TransactionStartedAtHeader],
@@ -89,7 +89,7 @@ func (coordinator *OrchestrationCoordinator) HandleSagaRollbackEvent(inputEvent 
 			messaging.TransactionIdHeader:        inputHeaders[messaging.TransactionIdHeader],
 			messaging.TransactionNameHeader:      inputHeaders[messaging.TransactionNameHeader],
 			messaging.TransactionStartedAtHeader: inputHeaders[messaging.TransactionStartedAtHeader],
-			messaging.StepStartedAtHeader:        time.Now().String(),
+			messaging.StepStartedAtHeader:        time.Now().Format(time.RFC3339Nano),
 		}
 		rollbackFailedEvent := &application.ItemReservationStatus{
 			OrderID: inputEvent.OrderID,
@@ -107,7 +107,7 @@ func (coordinator *OrchestrationCoordinator) HandleSagaRollbackEvent(inputEvent 
 			messaging.TransactionIdHeader:        inputHeaders[messaging.TransactionIdHeader],
 			messaging.TransactionNameHeader:      inputHeaders[messaging.TransactionNameHeader],
 			messaging.TransactionStartedAtHeader: inputHeaders[messaging.TransactionStartedAtHeader],
-			messaging.StepStartedAtHeader:        time.Now().String(),
+			messaging.StepStartedAtHeader:        time.Now().Format(time.RFC3339Nano),
 		}
 		rollbackSuccessEvent := &application.ItemsReleased{
 			OrderID: inputEvent.OrderID,

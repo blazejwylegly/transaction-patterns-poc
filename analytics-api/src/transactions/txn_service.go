@@ -13,7 +13,8 @@ type TxnService struct {
 	db *gorm.DB
 }
 
-func (handler *TxnService) HandleFinalTxnStep(txnContext TxnContext, finalTxnStep *db.TransactionStep) {
+func (handler *TxnService) HandleFinalTxnStep(txnContext TxnContext, finalTxnStep *db.TransactionStep) (bool, error) {
+	var txnResult bool
 	err := handler.db.Transaction(func(tx *gorm.DB) error {
 		var txn *db.Transaction
 
@@ -52,14 +53,16 @@ func (handler *TxnService) HandleFinalTxnStep(txnContext TxnContext, finalTxnSte
 		if err != nil {
 			return err
 		}
-
+		txnResult = txn.Status == "SUCCESS"
 		return nil
 	})
 	if err != nil {
 		log.Printf("Error trying to save newTxnStep %s for txn %s",
 			finalTxnStep.StepName,
 			txnContext.TxnId.String())
+		return false, err
 	}
+	return txnResult, nil
 }
 
 func (handler *TxnService) HandleTxnStep(txnContext TxnContext, newTxnStep *db.TransactionStep) {
